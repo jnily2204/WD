@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Invitation Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #FFF8F9; color: #5D4037; }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .admin-container { max-width: 900px; margin: 1rem auto; padding: 1rem; background-color: #FFFFFF; border-radius: 8px; box-shadow: 0 10px 25px rgba(136, 90, 90, 0.15); }
+        @media (min-width: 768px) { /* md breakpoint */
+            .admin-container { margin: 2rem auto; padding: 2rem; }
+        }
+        .admin-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; md:font-size: 2.2rem; color: #885A5A; text-align: center; margin-bottom: 1.5rem; md:margin-bottom: 2rem; }
+        .admin-section { margin-bottom: 2rem; padding: 1rem; md:padding: 1.5rem; border: 1px solid #FDE6E0; border-radius: 6px; background-color: #FFFAFA; }
+        .admin-section-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; md:font-size: 1.5rem; color: #A2706E; margin-bottom: 1rem; border-bottom: 1px solid #FDE6E0; padding-bottom: 0.5rem; }
+        .input-field, .textarea-field { border: 1px solid #E0C0C0; border-radius: 0.375rem; padding: 0.75rem 1rem; width: 100%; transition: border-color 0.3s ease, box-shadow 0.3s ease; background-color: #FFFFFF; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .textarea-field { min-height: 100px; }
+        .input-field:focus, .textarea-field:focus { border-color: #B98A8A; outline: none; box-shadow: 0 0 0 3px rgba(185, 138, 138, 0.2); }
+        .btn { padding: 0.6rem 1rem; md:padding: 0.6rem 1.2rem; border-radius: 0.375rem; transition: background-color 0.3s ease, transform 0.2s ease; text-transform: uppercase; font-size: 0.8rem; md:font-size: 0.9rem; letter-spacing: 0.05em; font-weight: 500; cursor: pointer; }
+        .btn-primary { background-color: #B98A8A; color: white; border: none; }
+        .btn-primary:hover:not(:disabled) { background-color: #A2706E; transform: translateY(-1px); }
+        .btn-primary:disabled { background-color: #D1C0C0; cursor: not-allowed; }
+        .btn-secondary { background-color: transparent; color: #B98A8A; border: 2px solid #B98A8A; }
+        .btn-secondary:hover { background-color: #B98A8A; color: white; }
+        .error-message { color: #D32F2F; font-size: 0.8rem; md:font-size: 0.875rem; margin-top: 0.25rem; }
+        .success-message { color: #388E3C; font-size: 0.8rem; md:font-size: 0.875rem; margin-top: 0.25rem; }
+        .nav-tabs { display: flex; flex-wrap: wrap; }
+        .nav-tabs button { padding: 0.5rem 0.8rem; md:padding: 0.5rem 1rem; margin-right: 0.5rem; margin-bottom: 0.5rem; border: none; background-color: transparent; color: #A07C7C; font-weight: 500; border-bottom: 2px solid transparent; transition: color 0.3s, border-color 0.3s; font-size: 0.85rem; md:font-size: 1rem;}
+        .nav-tabs button.active { color: #885A5A; border-bottom-color: #B98A8A; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .invitation-card-preview { background-color: #FFFAFA; border: 1px solid #FDE6E0; border-radius: 10px; padding: 1rem 1.5rem; md:padding: 1.5rem 2rem; max-width: 500px; margin: 1rem auto; box-shadow: 0 5px 15px rgba(185, 138, 138, 0.15); text-align: center; color: #885A5A; position: relative; background-image: url('https://placehold.co/500x700/FFF8F9/E5A9A9?text=Invitation+Background'); background-size: cover; background-blend-mode: overlay;}
+        .invitation-card-preview::before, .invitation-card-preview::after { content: '❀'; font-family: 'Playfair Display', serif; color: #E5A9A9; position: absolute; font-size: 1.8rem; md:font-size: 2rem; opacity: 0.6;}
+        .invitation-card-preview::before { top: 8px; left: 10px; transform: rotate(-15deg); }
+        .invitation-card-preview::after { bottom: 8px; right: 10px; transform: rotate(15deg); }
+        .invitation-guest-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; md:font-size: 1.5rem; color: #A2706E; font-weight: bold; margin: 0.8rem 0; border-top: 1px dashed #E0C0C0; border-bottom: 1px dashed #E0C0C0; padding: 0.4rem 0;}
+        .invitation-header { font-family: 'Playfair Display', serif; font-size: 1rem; md:font-size: 1.1rem; letter-spacing: 0.05em; margin-bottom: 0.6rem; }
+        .invitation-couple-names { font-family: 'Playfair Display', serif; font-size: 1.5rem; md:font-size: 1.8rem; font-weight: bold; color: #B98A8A; margin: 0.2rem 0; }
+        .invitation-details p { margin-bottom: 0.25rem; font-size: 0.8rem; md:font-size: 0.85rem; line-height: 1.4; }
+        .invitation-footer { margin-top: 0.8rem; font-style: italic; font-size: 0.75rem; md:font-size: 0.8rem; }
+        .heart-icon { color: #E5A9A9; font-size: 0.8em; margin: 0 0.25em; display: inline-block; vertical-align: baseline; }
+        .table-auto th, .table-auto td { padding: 0.4rem; md:padding: 0.5rem; border: 1px solid #FDE6E0; text-align: left; font-size: 0.8rem; md:font-size: 0.9rem;}
+        .table-auto th { background-color: #FFF0F1; color: #A2706E; }
+        .table-wrapper { overflow-x: auto; }
+        .share-button-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div id="adminLoginView" class="admin-container max-w-md px-4">
+        <h1 class="admin-title">Invitation Admin Login</h1>
+        <div class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username:</label>
+                <input type="text" id="username" class="input-field">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password:</label>
+                <input type="password" id="password" class="input-field">
+            </div>
+            <button id="loginBtn" class="btn btn-primary w-full">Login</button>
+            <p id="loginErrorMessage" class="error-message text-center"></p>
+        </div>
+    </div>
+
+    <div id="adminDashboardView" class="admin-container" style="display: none;">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+            <h1 class="admin-title !mb-2 sm:!mb-0 !text-center sm:!text-left">Dashboard</h1>
+            <button id="logoutBtn" class="btn btn-secondary text-xs sm:text-sm">Logout</button>
+        </div>
+        <p class="mb-4 text-center">Welcome, <span id="loggedInUserDisplay" class="font-semibold"></span>!</p>
+
+        <div class="nav-tabs mb-6 border-b border-gray-200">
+            <button data-tab="createInviteTab" class="tab-button active">Create Invitation</button>
+            <button data-tab="manageInvitesTab" class="tab-button">Manage Invitations</button>
+            <button data-tab="accountManagementTab" class="tab-button">My Account</button>
+            </div>
+
+        <div id="createInviteTab" class="tab-content active">
+            <div class="admin-section">
+                <h2 class="admin-section-title">Create New Invitation</h2>
+                <div class="mb-4">
+                    <label for="guestNameInput" class="block text-sm font-medium mb-1">Guest Name(s):</label>
+                    <input type="text" id="guestNameInput" class="input-field" placeholder="E.g., John & Jane Doe">
+                </div>
+                <h3 class="font-playfair text-lg text-rose-600 mb-2 text-center">Invitation Preview:</h3>
+                <div id="invitationPreview" class="invitation-card-preview">
+                    <p class="invitation-header">You are cordially invited to celebrate with us</p>
+                    <p id="previewGuestName" class="invitation-guest-name">[Guest Name(s)]</p>
+                    <p>as we join our lives in marriage</p>
+                    <p class="invitation-couple-names">Michael <span class="heart-icon text-rose-500">❤</span> Olivia</p>
+                    <div class="invitation-details mt-3">
+                        <p><strong>Ceremony:</strong> 10:00 AM - December 28, 2025</p>
+                        <p>At St. Paul's Cathedral</p>
+                        <p class="mt-1"><strong>Reception:</strong> 06:00 PM - December 28, 2025</p>
+                        <p>At The Grand Ballroom</p>
+                    </div>
+                    <p class="invitation-footer mt-4">Your presence would be a gift to us!</p>
+                </div>
+                <div class="text-center mt-6">
+                    <button id="generateInviteLinkBtn" class="btn btn-primary">💌 Generate Invitation Link</button>
+                </div>
+                <div id="generatedLinkOutput" class="mt-4 text-center text-sm break-all"></div>
+            </div>
+        </div>
+
+        <div id="manageInvitesTab" class="tab-content">
+             <div class="admin-section">
+                <h2 class="admin-section-title">Created Invitations List</h2>
+                <div class="table-wrapper">
+                    <div id="invitationsList">
+                        <p class="text-slate-500 text-sm">No invitations created yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="accountManagementTab" class="tab-content">
+            <div class="admin-section">
+                <h2 class="admin-section-title">Change Password</h2>
+                <div class="space-y-3 max-w-sm mx-auto">
+                    <div>
+                        <label for="currentPassword" class="block text-sm font-medium">Current Password:</label>
+                        <input type="password" id="currentPassword" class="input-field">
+                    </div>
+                    <div>
+                        <label for="newPassword" class="block text-sm font-medium">New Password:</label>
+                        <input type="password" id="newPassword" class="input-field">
+                    </div>
+                    <div>
+                        <label for="confirmNewPassword" class="block text-sm font-medium">Confirm New Password:</label>
+                        <input type="password" id="confirmNewPassword" class="input-field">
+                    </div>
+                    <button id="changePasswordBtn" class="btn btn-primary w-full">Change Password</button>
+                    <p id="changePasswordMessage" class="text-center text-sm mt-2"></p>
+                </div>
+            </div>
+        </div>
+        
+        </div>
+    <script>
+        // DOM Elements
+        const adminLoginView = document.getElementById('adminLoginView');
+        const adminDashboardView = document.getElementById('adminDashboardView');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginErrorMessage = document.getElementById('loginErrorMessage');
+        const loggedInUserDisplay = document.getElementById('loggedInUserDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        const guestNameInput = document.getElementById('guestNameInput');
+        const previewGuestName = document.getElementById('previewGuestName');
+        const generateInviteLinkBtn = document.getElementById('generateInviteLinkBtn');
+        const generatedLinkOutput = document.getElementById('generatedLinkOutput');
+        const invitationsListEl = document.getElementById('invitationsList');
+
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const changePasswordMessage = document.getElementById('changePasswordMessage');
+        
+
+        const INVITATION_BASE_URL = 'index.html'; 
+
+        // --- LocalStorage Helper Functions ---
+        function getUsers() {
+            const users = localStorage.getItem('wedding_users_en'); 
+            if (!users) {
+                const initialUsers = {
+                    "admin": { password: "admin", role: "admin" } 
+                };
+                localStorage.setItem('wedding_users_en', JSON.stringify(initialUsers));
+                return initialUsers;
+            }
+            let parsedUsers = JSON.parse(users);
+            let updated = false;
+            
+            if (parsedUsers["codau"]) { 
+                delete parsedUsers["codau"];
+                updated = true;
+            }
+            if (parsedUsers["chure"]) { 
+                delete parsedUsers["chure"];
+                updated = true;
+            }
+            if (!parsedUsers["admin"] || parsedUsers["admin"].password !== "admin" || parsedUsers["admin"].role !== "admin") {
+                parsedUsers["admin"] = { password: "admin", role: "admin" };
+                updated = true;
+            }
+            for (const userKey in parsedUsers) {
+                if (parsedUsers[userKey].role === 'sub_user') { 
+                    delete parsedUsers[userKey];
+                    updated = true;
+                }
+            }
+
+            if (updated) {
+                saveUsers(parsedUsers);
+            }
+            return parsedUsers;
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('wedding_users_en', JSON.stringify(users));
+        }
+
+        function getInvitations() {
+            const invites = localStorage.getItem('wedding_invitations_en'); 
+            return invites ? JSON.parse(invites) : {}; 
+        }
+
+        function saveInvitations(invitations) {
+            localStorage.setItem('wedding_invitations_en', JSON.stringify(invitations));
+        }
+        
+        function getRsvpStatus(invitationId) {
+             return localStorage.getItem(`rsvp_status_en_${invitationId}`); 
+        }
+
+        let currentUser = null;
+
+        // --- Tab Navigation ---
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTabId = button.getAttribute('data-tab');
+                if (!document.getElementById(targetTabId)) { 
+                    console.warn(`Tab content for '${targetTabId}' not found.`);
+                    return; 
+                }
+
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === targetTabId) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        function setActiveTab(tabId) {
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('active');
+                }
+            });
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+                if (content.id === tabId) {
+                    content.classList.add('active');
+                }
+            });
+        }
+
+
+        // --- Authentication ---
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+            const users = getUsers();
+
+            if (username === "admin" && users[username] && users[username].password === password) { 
+                currentUser = { username: username, role: users[username].role };
+                sessionStorage.setItem('weddingCurrentUser_en', JSON.stringify(currentUser)); 
+                showDashboard();
+                loginErrorMessage.textContent = '';
+            } else {
+                loginErrorMessage.textContent = 'Incorrect username or password.';
+                currentUser = null;
+                sessionStorage.removeItem('weddingCurrentUser_en');
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            sessionStorage.removeItem('weddingCurrentUser_en');
+            showLoginView();
+        }
+
+        function showLoginView() {
+            adminLoginView.style.display = 'block';
+            adminDashboardView.style.display = 'none';
+            usernameInput.value = '';
+            passwordInput.value = '';
+        }
+
+        function showDashboard() {
+            adminLoginView.style.display = 'none';
+            adminDashboardView.style.display = 'block';
+            loggedInUserDisplay.textContent = currentUser.username;
+            
+            const adminOnlyUserManagementTab = document.getElementById('adminOnlyUserManagementTab');
+            if(adminOnlyUserManagementTab) adminOnlyUserManagementTab.style.display = 'none';
+
+
+            setActiveTab('createInviteTab'); 
+            loadUserInvitations();
+        }
+        
+        // --- Invitation Management ---
+        if (guestNameInput && previewGuestName) {
+            guestNameInput.addEventListener('input', function() {
+                previewGuestName.textContent = this.value.trim() === '' ? '[Guest Name(s)]' : this.value;
+            });
+        }
+
+        if (generateInviteLinkBtn) {
+            generateInviteLinkBtn.addEventListener('click', function() {
+                const guestName = guestNameInput.value.trim();
+                if (guestName === '') {
+                    generatedLinkOutput.innerHTML = '<p class="error-message">Please enter the guest name(s).</p>';
+                    return;
+                }
+                const encodedGuestName = encodeURIComponent(guestName);
+                const invitationId = `${currentUser.username}_${Date.now()}_${encodeURIComponent(guestName.replace(/\s+/g, '_'))}`;
+
+                const weddingSiteUrl = localStorage.getItem('weddingSiteBaseUrl_en') || 'index.html'; 
+                const inviteLink = `${weddingSiteUrl}#view-invite?guest=${encodedGuestName}&invite_id=${invitationId}`;
+                const shareMessage = encodeURIComponent(`You're invited to Michael & Olivia's wedding! View your invitation: ${inviteLink}`);
+                
+                generatedLinkOutput.innerHTML = `
+                    <p class="success-message">Invitation link generated:</p>
+                    <input type="text" readonly value="${inviteLink}" id="inviteLinkInputAdmin" class="input-field mt-1 text-sm p-1 w-full" onclick="this.select()">
+                    <div class="mt-3 share-button-grid">
+                        <button onclick="copyAdminInviteLink('${inviteLink}')" class="btn btn-secondary text-xs py-1 px-2">Copy Link</button>
+                        <a href="sms:&body=${shareMessage}" class="btn btn-secondary text-xs py-1 px-2 bg-blue-400 hover:bg-blue-500 text-white border-blue-400 hover:border-blue-500">iMessage</a>
+                        <a href="https://wa.me/?text=${shareMessage}" target="_blank" class="btn btn-secondary text-xs py-1 px-2 bg-green-500 hover:bg-green-600 text-white border-green-500 hover:border-green-600">WhatsApp</a>
+                        <a href="viber://forward?text=${shareMessage}" class="btn btn-secondary text-xs py-1 px-2 bg-purple-500 hover:bg-purple-600 text-white border-purple-500 hover:border-purple-600">Viber</a>
+                        <a href="https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("You're invited to Michael & Olivia's wedding!")}" target="_blank" class="btn btn-secondary text-xs py-1 px-2 bg-sky-500 hover:bg-sky-600 text-white border-sky-500 hover:border-sky-600">Telegram</a>
+                        <button onclick="copyForSnapchat('${inviteLink}')" class="btn btn-secondary text-xs py-1 px-2 bg-yellow-400 hover:bg-yellow-500 text-black border-yellow-400 hover:border-yellow-500">Snapchat (Copy)</button>
+                    </div>
+                `;
+
+                const allInvitations = getInvitations();
+                if (!allInvitations[currentUser.username]) {
+                    allInvitations[currentUser.username] = [];
+                }
+                allInvitations[currentUser.username].push({ id: invitationId, guestName: guestName, link: inviteLink, created: new Date().toLocaleString('en-US') });
+                saveInvitations(allInvitations);
+                loadUserInvitations();
+            });
+        }
+        
+        window.copyAdminInviteLink = function(linkText) {
+            const linkInput = document.getElementById('inviteLinkInputAdmin');
+            if (linkInput) { linkInput.select(); linkInput.setSelectionRange(0, 99999); }
+             try {
+                navigator.clipboard.writeText(linkText).then(() => {
+                    alert('Invitation link copied!');
+                }).catch(err => { 
+                    console.warn('Clipboard API failed, trying execCommand:', err);
+                    if (linkInput && document.execCommand('copy')) {
+                         alert('Invitation link copied!');
+                    } else { throw new Error('Copy failed'); }
+                });
+            } catch (err) {
+                 console.error('Could not copy link: ', err);
+                 alert('Error copying link. Please copy manually.');
+            }
+        }
+        window.copyForSnapchat = function(linkText) {
+            try {
+                navigator.clipboard.writeText(linkText).then(() => {
+                    alert('Invitation link copied for Snapchat! Please paste it in the app.');
+                }).catch(err => { 
+                     console.warn('Clipboard API failed, trying execCommand for Snapchat:', err);
+                     const el = document.createElement('textarea');
+                     el.value = linkText;
+                     document.body.appendChild(el);
+                     el.select();
+                     document.execCommand('copy');
+                     document.body.removeChild(el);
+                     alert('Invitation link copied for Snapchat! Please paste it in the app.');
+                });
+            } catch (err) {
+                 console.error('Could not copy link for Snapchat: ', err);
+                 alert('Error copying link. Please copy manually.');
+            }
+        }
+
+
+        function loadUserInvitations() {
+            const allInvitations = getInvitations();
+            let displayInvitations = [];
+
+            for (const creatorUsername in allInvitations) {
+                const users = getUsers(); 
+                if (users[creatorUsername] && users[creatorUsername].role === 'admin') { 
+                     displayInvitations = displayInvitations.concat(
+                        allInvitations[creatorUsername].map(invite => ({...invite, creator: creatorUsername}))
+                    );
+                }
+            }
+            
+            if (displayInvitations.length === 0) {
+                invitationsListEl.innerHTML = '<p class="text-slate-500 text-sm">No invitations created yet.</p>';
+                return;
+            }
+
+            let tableHTML = '<table class="w-full table-auto border-collapse"><thead><tr><th>Guest Name(s)</th><th>Link</th><th>Date Created</th><th>RSVP Status</th><th>Created By</th></tr></thead><tbody>';
+
+            displayInvitations.sort((a,b) => new Date(b.created) - new Date(a.created)); 
+
+            displayInvitations.forEach(invite => {
+                const rsvp = getRsvpStatus(invite.id);
+                let rsvpDisplay = 'No Response Yet';
+                if (rsvp === 'attending') rsvpDisplay = '<span class="text-green-600 font-semibold">Attending</span>';
+                if (rsvp === 'not_attending') rsvpDisplay = '<span class="text-red-600 font-semibold">Not Attending</span>';
+
+                tableHTML += `<tr>
+                    <td class="break-all">${invite.guestName}</td>
+                    <td><a href="${invite.link}" target="_blank" class="text-blue-600 hover:underline text-xs break-all">${invite.link.substring(0,25)}...</a></td>
+                    <td>${invite.created}</td>
+                    <td>${rsvpDisplay}</td>
+                    <td>${invite.creator}</td> 
+                </tr>`;
+            });
+            tableHTML += '</tbody></table>';
+            invitationsListEl.innerHTML = tableHTML;
+        }
+
+
+        // --- Account Management (Change Password) ---
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', function() {
+                const currentPass = currentPasswordInput.value;
+                const newPass = newPasswordInput.value;
+                const confirmNewPass = confirmNewPasswordInput.value;
+                const users = getUsers();
+
+                if (!users[currentUser.username] || users[currentUser.username].password !== currentPass) {
+                    changePasswordMessage.textContent = 'Incorrect current password.';
+                    changePasswordMessage.className = 'error-message text-center text-sm mt-2';
+                    return;
+                }
+                if (newPass.length < 6) {
+                     changePasswordMessage.textContent = 'New password must be at least 6 characters.';
+                     changePasswordMessage.className = 'error-message text-center text-sm mt-2';
+                     return;
+                }
+                if (newPass !== confirmNewPass) {
+                    changePasswordMessage.textContent = 'New passwords do not match.';
+                    changePasswordMessage.className = 'error-message text-center text-sm mt-2';
+                    return;
+                }
+
+                users[currentUser.username].password = newPass;
+                saveUsers(users);
+                changePasswordMessage.textContent = 'Password changed successfully!';
+                changePasswordMessage.className = 'success-message text-center text-sm mt-2';
+                currentPasswordInput.value = '';
+                newPasswordInput.value = '';
+                confirmNewPasswordInput.value = '';
+            });
+        }
+
+        // --- Initial Load ---
+        const storedUser = sessionStorage.getItem('weddingCurrentUser_en'); 
+        if (storedUser) {
+            currentUser = JSON.parse(storedUser);
+            localStorage.setItem('weddingSiteBaseUrl_en', window.location.href.replace('admin-thiepmoi.html', 'index.html').split('#')[0]); 
+            showDashboard();
+        } else {
+            showLoginView();
+        }
+        
+        if(loginBtn) loginBtn.addEventListener('click', handleLogin);
+        if(passwordInput) passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+        if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+
+    </script>
+</body>
+</html>
