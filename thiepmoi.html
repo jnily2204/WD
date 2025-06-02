@@ -165,8 +165,6 @@
         const changePasswordMessage = document.getElementById('changePasswordMessage');
         
 
-        const INVITATION_BASE_URL = 'https://jnily2204.github.io/WD/'; // UPDATED BASE URL
-
         // --- LocalStorage Helper Functions ---
         function getUsers() {
             const users = localStorage.getItem('wedding_users_en'); 
@@ -325,8 +323,8 @@
                 const encodedGuestName = encodeURIComponent(guestName);
                 const invitationId = `${currentUser.username}_${Date.now()}_${encodeURIComponent(guestName.replace(/\s+/g, '_'))}`;
 
-                // Use the hardcoded INVITATION_BASE_URL
-                const inviteLink = `${INVITATION_BASE_URL}index.html#view-invite?guest=${encodedGuestName}&invite_id=${invitationId}`;
+                const weddingSiteUrl = localStorage.getItem('weddingSiteBaseUrl_en') || 'index.html'; 
+                const inviteLink = `${weddingSiteUrl}#view-invite?guest=${encodedGuestName}&invite_id=${invitationId}`;
                 const shareMessage = encodeURIComponent(`You're invited to Michael & Olivia's wedding! View your invitation: ${inviteLink}`);
                 
                 generatedLinkOutput.innerHTML = `
@@ -469,8 +467,7 @@
         const storedUser = sessionStorage.getItem('weddingCurrentUser_en'); 
         if (storedUser) {
             currentUser = JSON.parse(storedUser);
-            // No longer setting weddingSiteBaseUrl_en in localStorage from here,
-            // as INVITATION_BASE_URL is now hardcoded.
+            localStorage.setItem('weddingSiteBaseUrl_en', window.location.href.replace('thiepmoi.html', 'index.html').split('#')[0]); 
             showDashboard();
         } else {
             showLoginView();
