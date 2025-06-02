@@ -524,43 +524,10 @@
         };
 
         function getStoredOrDefaultContent() {
-            const storedContent = localStorage.getItem(SITE_CONTENT_KEY);
-            if (storedContent) {
-                try {
-                    const parsed = JSON.parse(storedContent);
-                    if (parsed && typeof parsed === 'object' && parsed.nav && parsed.hero) {
-                        const merged = { ...defaultSiteContent };
-                        for (const key in parsed) {
-                            if (typeof parsed[key] === 'object' && parsed[key] !== null && !Array.isArray(parsed[key]) && defaultSiteContent[key]) {
-                                merged[key] = { ...defaultSiteContent[key], ...parsed[key] };
-                                if (key === 'friendsSection' && parsed[key].friends && defaultSiteContent[key].friends) {
-                                     merged[key].friends = defaultSiteContent[key].friends.map((defaultFriend, i) => ({ ...defaultFriend, ...(parsed[key].friends[i] || {}) }));
-                                }
-                                if (key === 'coupleSection' && defaultSiteContent[key]) {
-                                    if (parsed[key].groom && defaultSiteContent[key].groom) merged[key].groom = {...defaultSiteContent[key].groom, ...parsed[key].groom};
-                                    if (parsed[key].bride && defaultSiteContent[key].bride) merged[key].bride = {...defaultSiteContent[key].bride, ...parsed[key].bride};
-                                }
-                                 if (key === 'eventSection' && defaultSiteContent[key]) {
-                                    if (parsed[key].ceremony && defaultSiteContent[key].ceremony) merged[key].ceremony = {...defaultSiteContent[key].ceremony, ...parsed[key].ceremony};
-                                    if (parsed[key].reception && defaultSiteContent[key].reception) merged[key].reception = {...defaultSiteContent[key].reception, ...parsed[key].reception};
-                                }
-
-
-                            } else if (Array.isArray(parsed[key]) && defaultSiteContent[key] && Array.isArray(defaultSiteContent[key])) {
-                                merged[key] = defaultSiteContent[key].map((item, i) => parsed[key][i] || item);
-                            }
-                            
-                            else {
-                                merged[key] = parsed[key];
-                            }
-                        }
-                        return merged;
-                    }
-                } catch (e) {
-                    console.error("Error parsing stored site content, using defaults:", e);
-                }
-            }
-            return defaultSiteContent;
+            // Since content management from admin panel was removed, 
+            // this site will always use the defaultSiteContent defined above.
+            // If you re-introduce admin content management, you'd re-enable localStorage reading here.
+            return defaultSiteContent; 
         }
 
         function updateElementText(id, text) {
@@ -768,7 +735,7 @@
             });
         }
 
-        document.querySelectorAll('a[href^="#"]:not([href="thiepmoi.html"])').forEach(anchor => { // Updated to thiepmoi.html
+        document.querySelectorAll('a[href^="#"]:not([href="thiepmoi.html"])').forEach(anchor => { 
             anchor.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
                 const targetId = href.substring(1);
