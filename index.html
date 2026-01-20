@@ -1,885 +1,458 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="siteTitle">Michael & Olivia's Wedding</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            scroll-behavior: smooth;
-            overflow-x: hidden;
-            background-color: #FFF8F9; 
-        }
-        .font-playfair {
-            font-family: 'Playfair Display', serif;
-        }
-        .hero-bg {
-            background-image: url('https://images.pexels.com/photos/313707/pexels-photo-313707.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'); /* European couple demo image */
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem; 
-            md:font-size: 2.5rem; 
-            color: #885A5A; 
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 0.8rem; 
-            md:margin-bottom: 1rem;
-        }
-        .section-subtitle {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 0.85rem; 
-            md:font-size: 1rem;
-            color: #A07C7C; 
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 2rem; 
-            md:margin-bottom: 3rem;
-        }
-        .btn-primary {
-            background-color: #B98A8A; 
-            color: white;
-            padding: 0.6rem 1.5rem; 
-            md:padding: 0.75rem 1.75rem;
-            border-radius: 0.375rem;
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 500;
-            display: inline-block;
-            box-shadow: 0 4px 10px rgba(185, 138, 138, 0.3);
-            font-size: 0.85rem; md:font-size: 1rem;
-        }
-        .btn-primary:hover:not(:disabled) {
-            background-color: #A2706E; 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(162, 112, 110, 0.4);
-        }
-        .btn-primary:disabled {
-            background-color: #D1C0C0;
-            cursor: not-allowed;
-        }
-        .btn-secondary {
-            background-color: transparent;
-            color: #B98A8A;
-            border: 2px solid #B98A8A;
-            padding: 0.6rem 1.5rem; 
-            md:padding: 0.75rem 1.75rem;
-            border-radius: 0.375rem;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 500;
-            display: inline-block;
-            font-size: 0.85rem; md:font-size: 1rem;
-        }
-        .btn-secondary:hover:not(:disabled) {
-            background-color: #B98A8A;
-            color: white;
-            transform: translateY(-2px);
-        }
-         .btn-secondary:disabled {
-            border-color: #D1C0C0;
-            color: #D1C0C0;
-            cursor: not-allowed;
-        }
-        .btn-rsvp {
-            padding: 0.5rem 1rem; margin: 0.25rem; font-size: 0.8rem; 
-            md:padding: 0.6rem 1.2rem; md:margin: 0 0.5rem; md:font-size: 0.9rem;
-        }
+import React, { useState, useEffect } from 'react';
+import { CreditCard, DollarSign, Calendar, TrendingDown, AlertCircle, Landmark, Plus, Trash2, Edit2, CheckCircle, ArrowRight, Moon, Sun } from 'lucide-react';
 
+const App = () => {
+  // --- STATE GIAO DIỆN ---
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #FFF0F1; }
-        ::-webkit-scrollbar-thumb { background: #DAB8B8; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #C7A0A0; }
+  // --- STATE QUẢN LÝ DANH SÁCH THẺ ---
+  const [cards, setCards] = useState([
+    {
+      id: 1,
+      bankName: 'Techcombank Visa',
+      balance: 20000000,
+      interestRate: 30, // % năm
+      minPayment: 1000000,
+      paymentDate: 5 // Ngày 5 hàng tháng
+    },
+    {
+      id: 2,
+      bankName: 'VPBank Mastercard',
+      balance: 15000000,
+      interestRate: 36,
+      minPayment: 750000,
+      paymentDate: 20
+    }
+  ]);
 
-        .input-field {
-            border: 1px solid #E0C0C0;
-            border-radius: 0.375rem;
-            padding: 0.85rem 1rem;
-            width: 100%;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: #FFFAFA;
-            font-size: 0.9rem;
-        }
-        .input-field:focus {
-            border-color: #B98A8A;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(185, 138, 138, 0.2);
-        }
-        .form-radio { color: #B98A8A; }
-        .form-radio:focus { ring: #B98A8A; ring-offset-color: #FFF8F9; }
+  // State cho form thêm/sửa thẻ
+  const [form, setForm] = useState({
+    bankName: '',
+    balance: '',
+    interestRate: '',
+    minPayment: '',
+    paymentDate: ''
+  });
 
-        .fade-in-section { opacity: 0; transform: translateY(40px); transition: opacity 0.9s ease-out, transform 0.9s ease-out; }
-        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+  // --- STATE CHO CÔNG TÍNH TOÁN ---
+  const [selectedCardId, setSelectedCardId] = useState(1);
+  const [plannedMonthlyPayment, setPlannedMonthlyPayment] = useState(2000000);
+  
+  const [schedule, setSchedule] = useState([]);
+  const [summary, setSummary] = useState({
+    totalInterest: 0,
+    totalPaid: 0,
+    months: 0,
+    isPayable: true
+  });
 
-        .gallery-item img { transition: transform 0.5s ease, filter 0.5s ease; border-radius: 0.375rem; }
-        .gallery-item:hover img { transform: scale(1.08); filter: brightness(1.05) saturate(1.1); }
+  // --- HÀM HỖ TRỢ ---
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  const calculateMonthlyInterest = (balance, rate) => {
+    return balance * (rate / 100 / 12);
+  };
+
+  // --- LOGIC ---
+  const handleAddCard = () => {
+    if (!form.bankName || !form.balance) return;
+    
+    const newCard = {
+      id: Date.now(),
+      bankName: form.bankName,
+      balance: parseFloat(form.balance),
+      interestRate: parseFloat(form.interestRate) || 0,
+      minPayment: parseFloat(form.minPayment) || 0,
+      paymentDate: parseInt(form.paymentDate) || 1
+    };
+
+    setCards([...cards, newCard]);
+    setForm({ bankName: '', balance: '', interestRate: '', minPayment: '', paymentDate: '' });
+    setSelectedCardId(newCard.id);
+    setPlannedMonthlyPayment(Math.max(newCard.minPayment, 2000000));
+  };
+
+  const handleDeleteCard = (id) => {
+    const newCards = cards.filter(c => c.id !== id);
+    setCards(newCards);
+    if (selectedCardId === id && newCards.length > 0) {
+      setSelectedCardId(newCards[0].id);
+    } else if (newCards.length === 0) {
+      setSelectedCardId(null);
+    }
+  };
+
+  useEffect(() => {
+    const card = cards.find(c => c.id === selectedCardId);
+    if (!card) {
+      setSchedule([]);
+      return;
+    }
+
+    let currentBalance = card.balance;
+    const rate = card.interestRate;
+    const payment = parseFloat(plannedMonthlyPayment);
+
+    if (!currentBalance || !payment) return;
+
+    const monthlyRate = rate / 100 / 12;
+    let tempBalance = currentBalance;
+    let totalInterest = 0;
+    let months = 0;
+    const newSchedule = [];
+
+    if (tempBalance * monthlyRate >= payment) {
+      setSummary({ totalInterest: 0, totalPaid: 0, months: 0, isPayable: false });
+      setSchedule([]);
+      return;
+    }
+
+    while (tempBalance > 0 && months < 360) {
+      months++;
+      const interestPayment = tempBalance * monthlyRate;
+      let principalPayment = payment - interestPayment;
+      
+      if (tempBalance < principalPayment) {
+        principalPayment = tempBalance;
+      }
+
+      totalInterest += interestPayment;
+      tempBalance -= principalPayment;
+
+      newSchedule.push({
+        month: months,
+        interest: interestPayment,
+        principal: principalPayment,
+        remaining: tempBalance < 0 ? 0 : tempBalance,
+        totalPayment: interestPayment + principalPayment
+      });
+    }
+
+    setSchedule(newSchedule);
+    setSummary({
+      totalInterest: totalInterest,
+      totalPaid: card.balance + totalInterest,
+      months: months,
+      isPayable: months < 360
+    });
+
+  }, [selectedCardId, plannedMonthlyPayment, cards]);
+
+  const activeCard = cards.find(c => c.id === selectedCardId);
+
+  // --- STYLE UTILS ---
+  const theme = {
+    bg: isDarkMode ? 'bg-slate-900' : 'bg-slate-50',
+    text: isDarkMode ? 'text-slate-100' : 'text-slate-800',
+    cardBg: isDarkMode ? 'bg-slate-800' : 'bg-white',
+    cardBorder: isDarkMode ? 'border-slate-700' : 'border-slate-200',
+    subText: isDarkMode ? 'text-slate-400' : 'text-slate-500',
+    tableHeader: isDarkMode ? 'bg-slate-700/50 text-slate-300' : 'bg-slate-50 text-slate-500',
+    tableRowHover: isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50',
+    inputBg: isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300',
+    accentBg: isDarkMode ? 'bg-indigo-900/30' : 'bg-indigo-50',
+  };
+
+  return (
+    <div className={`min-h-screen font-sans p-4 md:p-8 transition-colors duration-300 ${theme.bg} ${theme.text}`}>
+      <div className="max-w-6xl mx-auto space-y-8">
         
-        .nav-menu {
-            display: none;
-            flex-direction: column;
-            position: absolute;
-            top: 100%; 
-            left: 0;
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            padding: 1rem 0;
-            z-index: 40; 
-        }
-        .nav-menu.active { display: flex; }
-        .nav-menu a {
-            padding: 0.75rem 1.5rem;
-            text-align: center;
-            color: #776B6B;
-            border-bottom: 1px solid #FDE6E0;
-        }
-        .nav-menu a:last-child { border-bottom: none; }
-        .nav-menu a:hover { background-color: #FFF0F1; color: #B98A8A; }
-        .hamburger-icon { display: none; }
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="p-3 bg-indigo-600 rounded-lg shadow-lg">
+              <CreditCard className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Quản Lý & Tính Nợ Thẻ Tín Dụng</h1>
+              <p className={theme.subText}>Theo dõi danh sách thẻ và lập kế hoạch trả nợ</p>
+            </div>
+          </div>
+          
+          {/* Nút Toggle Dark Mode */}
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-3 rounded-full shadow-sm transition-all ${isDarkMode ? 'bg-slate-700 text-yellow-400 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
+          >
+            {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
+          </button>
+        </div>
 
-        @media (max-width: 767px) { /* md breakpoint */
-            .desktop-nav-links { display: none; }
-            .hamburger-icon { display: block; }
-        }
+        {/* PHẦN 1: DANH SÁCH THẺ */}
+        <div className={`rounded-xl shadow-sm border overflow-hidden transition-colors ${theme.cardBg} ${theme.cardBorder}`}>
+          <div className={`p-6 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50'}`}>
+            <h2 className={`font-semibold text-lg flex items-center ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+              <Landmark className="w-5 h-5 mr-2 text-indigo-600" /> 
+              Danh Sách Thẻ Cần Trả
+            </h2>
+            <span className={`text-sm px-3 py-1 rounded border ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-white border-slate-200 text-slate-500'}`}>
+              Tổng nợ: <span className="font-bold text-red-500">{formatCurrency(cards.reduce((sum, c) => sum + c.balance, 0))}</span>
+            </span>
+          </div>
 
-
-        #preloader { position: fixed; left: 0; top: 0; z-index: 99999; width: 100%; height: 100%; overflow: visible; background: #FFF8F9; display: flex; justify-content: center; align-items: center; }
-        .loader-heart { font-size: 3rem; color: #E5A9A9; animation: pulse 1.5s infinite ease-in-out; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-        
-        .card { background-color: #ffffff; border-radius: 0.5rem; box-shadow: 0 10px 25px -5px rgba(136, 90, 90, 0.1), 0 8px 10px -6px rgba(136, 90, 90, 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 35px -5px rgba(136, 90, 90, 0.15), 0 10px 15px -6px rgba(136, 90, 90, 0.15); }
-
-        .person-image { width: 120px; height: 120px; md:width: 150px; md:height: 150px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; border: 4px solid #FDE6E0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        .heart-icon { color: #E5A9A9; font-size: 0.8em; margin: 0 0.25em; display: inline-block; vertical-align: baseline; }
-        
-        .invitation-display-view { 
-            background-color: #FFFAFA;
-            border: 1px solid #FDE6E0;
-            border-radius: 10px;
-            padding: 1.5rem; 
-            md:padding: 2rem 2.5rem;
-            max-width: 600px;
-            margin: 1rem auto; 
-            md:margin: 2rem auto;
-            box-shadow: 0 10px 30px rgba(185, 138, 138, 0.2);
-            text-align: center;
-            color: #885A5A;
-            position: relative;
-            background-image: url('https://placehold.co/600x800/FFF8F9/E5A9A9?text=Invitation+Background'); 
-            background-size: cover;
-            background-blend-mode: overlay;
-        }
-         .invitation-display-view::before, .invitation-display-view::after {
-            content: '❀'; 
-            font-family: 'Playfair Display', serif;
-            color: #E5A9A9;
-            position: absolute;
-            font-size: 2rem; md:font-size: 2.5rem;
-            opacity: 0.6;
-        }
-        .invitation-display-view::before { top: 10px; left: 15px; transform: rotate(-15deg); }
-        .invitation-display-view::after { bottom: 10px; right: 15px; transform: rotate(15deg); }
-
-        .invitation-guest-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem; md:font-size: 1.8rem;
-            color: #A2706E;
-            font-weight: bold;
-            margin: 1rem 0; md:margin: 1.5rem 0;
-            border-top: 1px dashed #E0C0C0;
-            border-bottom: 1px dashed #E0C0C0;
-            padding: 0.5rem 0; md:padding: 0.75rem 0;
-        }
-        .invitation-header { font-family: 'Playfair Display', serif; font-size: 1.1rem; md:font-size: 1.3rem; letter-spacing: 0.05em; margin-bottom: 0.8rem; md:margin-bottom: 1rem; }
-        .invitation-couple-names { font-family: 'Playfair Display', serif; font-size: 1.8rem; md:font-size: 2.2rem; font-weight: bold; color: #B98A8A; margin: 0.4rem 0; md:margin: 0.5rem 0; }
-        .invitation-details p { margin-bottom: 0.4rem; font-size: 0.9rem; md:font-size: 0.95rem; line-height: 1.5; }
-        .invitation-footer { margin-top: 1rem; md:margin-top: 1.5rem; font-style: italic; font-size: 0.85rem; md:font-size: 0.9rem; }
-
-        #fullPageInvitationContainer {
-            display: none; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #FFF8F9;
-            z-index: 100000;
-            overflow-y: auto;
-            padding: 1rem; 
-            md:padding: 2rem;
-            justify-content: center;
-            align-items: center;
-        }
-         #fullPageInvitationContainer.active {
-            display: flex; 
-        }
-        #invitationRsvpMessage { margin-top: 1rem; font-weight: 500; }
-
-    </style>
-</head>
-<body class="text-slate-700 antialiased">
-
-    <div id="preloader">
-        <div class="loader-heart">❤️</div>
-    </div>
-
-    <div id="mainPageContent">
-        <nav class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
-            <div class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-                <a href="#home" id="navLogo" class="font-playfair text-2xl md:text-3xl text-rose-700 font-bold hover:text-rose-500 transition-colors duration-300">
-                    <span id="navGroomName">Michael</span> <span class="heart-icon">❤</span> <span id="navBrideName">Olivia</span>
-                </a>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead className={`uppercase font-semibold text-xs ${theme.tableHeader}`}>
+                <tr>
+                  <th className="px-6 py-4">Ngân hàng / Tên Thẻ</th>
+                  <th className="px-6 py-4 text-right">Số tiền nợ</th>
+                  <th className="px-6 py-4 text-right">Lãi suất năm</th>
+                  <th className="px-6 py-4 text-right text-red-500">Lãi tháng này (Est)</th>
+                  <th className="px-6 py-4 text-right">Thanh toán tối thiểu</th>
+                  <th className="px-6 py-4 text-center">Ngày thanh toán</th>
+                  <th className="px-6 py-4 text-center">Hành động</th>
+                </tr>
+              </thead>
+              <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
+                {cards.map((card) => (
+                  <tr 
+                    key={card.id} 
+                    onClick={() => {
+                      setSelectedCardId(card.id);
+                      setPlannedMonthlyPayment(Math.max(card.minPayment, 2000000));
+                    }}
+                    className={`cursor-pointer transition-colors ${selectedCardId === card.id ? theme.accentBg : theme.tableRowHover}`}
+                  >
+                    <td className={`px-6 py-4 font-medium flex items-center ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                      {selectedCardId === card.id && <CheckCircle className="w-4 h-4 text-indigo-500 mr-2" />}
+                      {card.bankName}
+                    </td>
+                    <td className="px-6 py-4 text-right font-semibold">{formatCurrency(card.balance)}</td>
+                    <td className="px-6 py-4 text-right">{card.interestRate}%</td>
+                    <td className="px-6 py-4 text-right text-red-500 font-medium">
+                      {formatCurrency(calculateMonthlyInterest(card.balance, card.interestRate))}
+                    </td>
+                    <td className={`px-6 py-4 text-right ${theme.subText}`}>{formatCurrency(card.minPayment)}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2 py-1 rounded text-xs ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                        Ngày {card.paymentDate}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteCard(card.id); }}
+                        className={`p-1 rounded transition ${isDarkMode ? 'hover:bg-red-900/50 text-slate-500 hover:text-red-400' : 'hover:bg-red-100 text-slate-400 hover:text-red-500'}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
                 
-                <div class="hamburger-icon md:hidden">
-                    <button id="hamburgerBtn" aria-label="Open menu">
-                        <svg class="w-6 h-6 text-rose-700" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
-                            <path d="M4 6h16M4 12h16m-7 6h7"></path>
-                        </svg>
+                {/* Row Input thêm thẻ mới */}
+                <tr className={`border-t-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                  <td className="px-4 py-3">
+                    <input 
+                      type="text" 
+                      placeholder="VD: VIB Online Plus..." 
+                      className={`w-full text-sm p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
+                      value={form.bankName}
+                      onChange={e => setForm({...form, bankName: e.target.value})}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input 
+                      type="number" 
+                      placeholder="Số dư nợ..." 
+                      className={`w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
+                      value={form.balance}
+                      onChange={e => setForm({...form, balance: e.target.value})}
+                    />
+                  </td>
+                  <td className="px-4 py-3 w-24">
+                    <input 
+                      type="number" 
+                      placeholder="%" 
+                      className={`w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
+                      value={form.interestRate}
+                      onChange={e => setForm({...form, interestRate: e.target.value})}
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-center text-xs text-slate-400">---</td>
+                  <td className="px-4 py-3">
+                    <input 
+                      type="number" 
+                      placeholder="Min Payment..." 
+                      className={`w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
+                      value={form.minPayment}
+                      onChange={e => setForm({...form, minPayment: e.target.value})}
+                    />
+                  </td>
+                  <td className="px-4 py-3 w-24">
+                    <input 
+                      type="number" 
+                      placeholder="Ngày" 
+                      max="31"
+                      className={`w-full text-sm p-2 text-center rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
+                      value={form.paymentDate}
+                      onChange={e => setForm({...form, paymentDate: e.target.value})}
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <button 
+                      onClick={handleAddCard}
+                      className="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded text-sm font-medium transition shadow-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Thêm
                     </button>
-                </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-                <div class="hidden md:flex space-x-3 lg:space-x-6 desktop-nav-links">
-                    <a href="#home" id="navLinkHome" class="nav-link text-sm lg:text-base">Home</a>
-                    <a href="#couple" id="navLinkCouple" class="nav-link text-sm lg:text-base">The Couple</a>
-                    <a href="#story" id="navLinkStory" class="nav-link text-sm lg:text-base">Our Story</a>
-                    <a href="#event" id="navLinkEvent" class="nav-link text-sm lg:text-base">The Event</a>
-                    <a href="thiepmoi.html" target="_blank" class="nav-link text-sm lg:text-base">Create Invitation</a> 
-                    <a href="#gallery" id="navLinkGallery" class="nav-link text-sm lg:text-base">Gallery</a>
-                    <a href="#friends" id="navLinkFriends" class="nav-link text-sm lg:text-base">Wedding Party</a>
-                    <a href="#rsvp" id="navLinkRsvp" class="nav-link text-sm lg:text-base">RSVP</a>
-                </div>
-            </div>
-            <div id="mobileNavMenu" class="nav-menu md:hidden">
-                <a href="#home" class="nav-link-mobile" data-nav-id="navLinkHome">Home</a>
-                <a href="#couple" class="nav-link-mobile" data-nav-id="navLinkCouple">The Couple</a>
-                <a href="#story" class="nav-link-mobile" data-nav-id="navLinkStory">Our Story</a>
-                <a href="#event" class="nav-link-mobile" data-nav-id="navLinkEvent">The Event</a>
-                <a href="thiepmoi.html" target="_blank" class="nav-link-mobile">Create Invitation</a> 
-                <a href="#gallery" class="nav-link-mobile" data-nav-id="navLinkGallery">Gallery</a>
-                <a href="#friends" class="nav-link-mobile" data-nav-id="navLinkFriends">Wedding Party</a>
-                <a href="#rsvp" class="nav-link-mobile" data-nav-id="navLinkRsvp">RSVP</a>
-            </div>
-        </nav>
-
-        <section id="home" class="hero-bg h-screen flex flex-col items-center justify-center text-white relative">
-            <div class="absolute inset-0 bg-black opacity-40"></div>
-            <div class="text-center z-10 p-4 md:p-6 fade-in-section is-visible"> 
-                <h2 id="heroCoupleNames" class="font-playfair text-4xl sm:text-5xl md:text-7xl text-white mb-2 md:mb-3">
-                    <span id="heroGroomNameDisplay">Michael</span> <span class="heart-icon text-rose-300 text-3xl sm:text-4xl md:text-6xl">❤</span> <span id="heroBrideNameDisplay">Olivia</span>
-                </h2>
-                <p id="heroSubtitleText" class="text-lg sm:text-xl md:text-2xl mb-4 md:mb-6 font-light tracking-wider">WE ARE GETTING MARRIED!</p>
-                <p id="heroDateTextDisplay" class="text-xl sm:text-2xl md:text-3xl font-semibold mb-6 md:mb-8 text-rose-200">DECEMBER 28, 2025</p>
-                <div id="countdown" class="text-xl sm:text-2xl md:text-4xl font-bold grid grid-cols-4 gap-2 md:gap-4 max-w-xs sm:max-w-sm md:max-w-lg mx-auto mb-8 md:mb-10 text-white">
-                    <div><span id="days" class="block text-3xl sm:text-4xl md:text-5xl">00</span> <span class="block text-xs md:text-sm font-normal opacity-80">Days</span></div>
-                    <div><span id="hours" class="block text-3xl sm:text-4xl md:text-5xl">00</span> <span class="block text-xs md:text-sm font-normal opacity-80">Hours</span></div>
-                    <div><span id="minutes" class="block text-3xl sm:text-4xl md:text-5xl">00</span> <span class="block text-xs md:text-sm font-normal opacity-80">Minutes</span></div>
-                    <div><span id="seconds" class="block text-3xl sm:text-4xl md:text-5xl">00</span> <span class="block text-xs md:text-sm font-normal opacity-80">Seconds</span></div>
-                </div>
-                <a href="#event" class="btn-primary">View Event Details</a>
-            </div>
-        </section>
-
-        <section id="couple" class="py-16 md:py-28 bg-rose-50 fade-in-section px-4">
-            <div class="container mx-auto">
-                <h2 id="coupleSectionTitleDisplay" class="section-title">The Couple</h2>
-                <p id="coupleSectionSubtitleDisplay" class="section-subtitle">Two Hearts, One Journey</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-start max-w-4xl mx-auto">
-                    <div class="text-center card p-6 md:p-8">
-                        <img id="groomImageDisplay" src="https://images.pexels.com/photos/837140/pexels-photo-837140.jpeg?auto=compress&cs=tinysrgb&w=300" alt="Groom" class="person-image">
-                        <h3 id="groomNameDisplay" class="font-playfair text-2xl md:text-3xl text-rose-700 mb-2">Michael</h3>
-                        <p id="groomQuoteDisplay" class="text-slate-600 italic mb-3 text-sm md:text-base">"My heart is and always will be yours."</p>
-                        <p id="groomDescDisplay" class="text-slate-500 text-xs md:text-sm">A warm-hearted man who loves adventure and sunset views. He found his perfect other half in Olivia.</p>
-                    </div>
-                    <div class="text-center card p-6 md:p-8">
-                        <img id="brideImageDisplay" src="https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=300" alt="Bride" class="person-image">
-                        <h3 id="brideNameDisplay" class="font-playfair text-2xl md:text-3xl text-rose-700 mb-2">Olivia</h3>
-                        <p id="brideQuoteDisplay" class="text-slate-600 italic mb-3 text-sm md:text-base">"In you, I've found the love of my life and my closest, truest friend."</p>
-                        <p id="brideDescDisplay" class="text-slate-500 text-xs md:text-sm">A gentle soul with a love for art and good books. She found in Michael a steadfast shoulder and a sincere love.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="story" class="py-16 md:py-28 bg-white fade-in-section px-4">
-            <div class="container mx-auto">
-                 <h2 id="storySectionTitleDisplay" class="section-title">Our Love Story</h2>
-                <p id="storySectionSubtitleDisplay" class="section-subtitle">The Journey to Forever</p>
-                <div class="max-w-3xl mx-auto text-sm md:text-lg leading-relaxed text-slate-600 space-y-4 md:space-y-6 text-center">
-                    <p id="storyPara1Display">"Meeting was fate, becoming friends was a choice, but falling in love was beyond our control. Our story is written with laughter, shared dreams, and a love strong enough to overcome any challenge."</p>
-                    <p id="storyPara2Display">"From the first shy hellos to the moment we knew we couldn't live without each other, every step has been a testament to our love. Today, we invite you to witness the most beautiful chapter of our journey."</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="event" class="py-16 md:py-28 bg-rose-50 fade-in-section px-4">
-            <div class="container mx-auto">
-                <h2 id="eventSectionTitleDisplay" class="section-title">Event Information</h2>
-                <p id="eventSectionSubtitleDisplay" class="section-subtitle">You Are Joyfully Invited</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto">
-                    <div class="card p-6 md:p-8 text-center">
-                        <img id="ceremonyIconDisplay" src="https://images.pexels.com/photos/265855/pexels-photo-265855.jpeg?auto=compress&cs=tinysrgb&w=100" alt="Ceremony" class="mx-auto mb-4 h-16 w-16 md:h-20 md:w-20 rounded-full object-cover p-1 border-2 border-rose-200">
-                        <h3 id="ceremonyTitleDisplay" class="font-playfair text-xl md:text-3xl text-rose-700 mb-2 md:mb-3">The Ceremony</h3>
-                        <p id="ceremonyTimeDisplay" class="text-md md:text-lg font-semibold text-slate-700 mb-1">10:00 AM - Saturday, December 28, 2025</p>
-                        <p id="ceremonyVenueDisplay" class="mb-1 md:mb-2 text-slate-600 text-sm md:text-base">St. Paul's Cathedral</p>
-                        <p id="ceremonyAddressDisplay" class="mb-3 md:mb-4 text-slate-500 text-xs md:text-sm">123 Cathedral Square, City Center</p>
-                        <a id="ceremonyMapLinkDisplay" href="#" target="_blank" class="btn-secondary text-xs md:text-sm">View Map</a>
-                    </div>
-                    <div class="card p-6 md:p-8 text-center">
-                         <img id="receptionIconDisplay" src="https://images.pexels.com/photos/265920/pexels-photo-265920.jpeg?auto=compress&cs=tinysrgb&w=100" alt="Reception" class="mx-auto mb-4 h-16 w-16 md:h-20 md:w-20 rounded-full object-cover p-1 border-2 border-rose-200">
-                        <h3 id="receptionTitleDisplay" class="font-playfair text-xl md:text-3xl text-rose-700 mb-2 md:mb-3">The Reception</h3>
-                        <p id="receptionTimeDisplay" class="text-md md:text-lg font-semibold text-slate-700 mb-1">06:00 PM - Saturday, December 28, 2025</p>
-                        <p id="receptionVenueDisplay" class="mb-1 md:mb-2 text-slate-600 text-sm md:text-base">The Grand Ballroom</p>
-                        <p id="receptionAddressDisplay" class="mb-3 md:mb-4 text-slate-500 text-xs md:text-sm">456 Celebration Avenue, Downtown</p>
-                        <a id="receptionMapLinkDisplay" href="#" target="_blank" class="btn-secondary text-xs md:text-sm">View Map</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="gallery" class="py-16 md:py-28 bg-white fade-in-section px-4">
-            <div class="container mx-auto">
-                <h2 id="gallerySectionTitleDisplay" class="section-title">Sweet Moments</h2>
-                <p id="gallerySectionSubtitleDisplay" class="section-subtitle">Our Cherished Memories</p>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-6" id="galleryImageContainer">
-                    <div class="gallery-item"><img src="https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Wedding Moment 1" class="w-full h-auto object-cover aspect-square"></div>
-                    <div class="gallery-item"><img src="https://images.pexels.com/photos/1024984/pexels-photo-1024984.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Wedding Moment 2" class="w-full h-auto object-cover aspect-square"></div>
-                    <div class="gallery-item"><img src="https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Wedding Moment 3" class="w-full h-auto object-cover aspect-square"></div>
-                    <div class="gallery-item"><img src="https://images.pexels.com/photos/1779479/pexels-photo-1779479.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Wedding Moment 4" class="w-full h-auto object-cover aspect-square"></div>
-                    <div class="gallery-item"><img src="https://images.pexels.com/photos/3014856/pexels-photo-3014856.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Wedding Moment 5" class="w-full h-auto object-cover aspect-square"></div>
-                    <div class="gallery-item"><img src="https://images.pexels.com/photos/931796/pexels-photo-931796.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Wedding Moment 6" class="w-full h-auto object-cover aspect-square"></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="friends" class="py-16 md:py-28 bg-rose-50 fade-in-section px-4">
-            <div class="container mx-auto">
-                <h2 id="friendsSectionTitleDisplay" class="section-title">The Wedding Party</h2>
-                <p id="friendsSectionSubtitleDisplay" class="section-subtitle">Our Beloved Friends</p>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-8" id="friendsContainer">
-                    <div class="text-center">
-                        <img src="https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Groomsman 1" class="person-image">
-                        <h4 class="font-semibold text-md md:text-lg text-rose-700">James Smith</h4>
-                        <p class="text-xs md:text-sm text-slate-500">Best Man</p>
-                    </div>
-                    <div class="text-center">
-                        <img src="https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Bridesmaid 1" class="person-image">
-                        <h4 class="font-semibold text-md md:text-lg text-rose-700">Emily Jones</h4>
-                        <p class="text-xs md:text-sm text-slate-500">Maid of Honor</p>
-                    </div>
-                    <div class="text-center">
-                        <img src="https://images.pexels.com/photos/846741/pexels-photo-846741.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Groomsman 2" class="person-image">
-                        <h4 class="font-semibold text-md md:text-lg text-rose-700">David Wilson</h4>
-                        <p class="text-xs md:text-sm text-slate-500">Groomsman</p>
-                    </div>
-                    <div class="text-center">
-                        <img src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Bridesmaid 2" class="person-image">
-                        <h4 class="font-semibold text-md md:text-lg text-rose-700">Sarah Brown</h4>
-                        <p class="text-xs md:text-sm text-slate-500">Bridesmaid</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="rsvp" class="py-16 md:py-28 bg-white fade-in-section px-4">
-            <div class="container mx-auto max-w-xl text-center">
-                <h2 id="rsvpSectionTitleDisplay" class="section-title">RSVP</h2>
-                <p id="rsvpSectionSubtitleDisplay" class="section-subtitle">Let Us Know If You Can Make It</p>
-                <p class="mb-8 md:mb-10 text-slate-600 text-sm md:text-base">We would be delighted to have you celebrate with us. Please RSVP by <strong id="rsvpDeadlineTextDisplay" class="font-semibold text-rose-700">November 30, 2025</strong> so we can make arrangements.</p>
-                <form id="rsvpForm" class="space-y-4 md:space-y-6 text-left bg-rose-50 p-6 md:p-10 rounded-lg shadow-xl">
-                    <div>
-                        <label for="name" class="block text-xs md:text-sm font-medium mb-1 text-rose-800">Full Name(s):</label>
-                        <input type="text" id="name" name="name" required class="input-field" placeholder="John Doe">
-                    </div>
-                    <div>
-                        <label for="guests" class="block text-xs md:text-sm font-medium mb-1 text-rose-800">Number of Guests (including yourself):</label>
-                        <input type="number" id="guests" name="guests" min="1" value="1" required class="input-field">
-                    </div>
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium mb-2 text-rose-800">Will you be attending?</label>
-                        <div class="flex flex-col sm:flex-row sm:space-x-6 space-y-3 sm:space-y-0">
-                            <label class="flex items-center cursor-pointer p-2 sm:p-3 rounded-md border border-rose-200 hover:bg-rose-100 transition-colors duration-200">
-                                <input type="radio" name="attendance" value="yes" class="form-radio h-4 w-4 text-rose-600 focus:ring-rose-500" checked>
-                                <span class="ml-2 sm:ml-3 text-rose-800 text-sm">Joyfully Accept</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer p-2 sm:p-3 rounded-md border border-rose-200 hover:bg-rose-100 transition-colors duration-200">
-                                <input type="radio" name="attendance" value="no" class="form-radio h-4 w-4 text-rose-600 focus:ring-rose-500">
-                                <span class="ml-2 sm:ml-3 text-rose-800 text-sm">Regretfully Decline</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="message" class="block text-xs md:text-sm font-medium mb-1 text-rose-800">Message (optional):</label>
-                        <textarea id="message" name="message" rows="3" md:rows="4" class="input-field" placeholder="Leave a message for the couple..."></textarea>
-                    </div>
-                    <div class="text-center pt-2 md:pt-4">
-                        <button type="submit" class="btn-primary w-full md:w-auto">Send RSVP</button>
-                    </div>
-                </form>
-                <div id="rsvpMessage" class="mt-6 md:mt-8 text-sm md:text-base"></div>
-            </div>
-        </section>
-        
-        <section id="gifts" class="py-16 md:py-28 bg-rose-50 fade-in-section px-4">
-            <div class="container mx-auto text-center">
-                <h2 id="giftsSectionTitleDisplay" class="section-title">Gift Registry</h2>
-                <p id="giftsSectionSubtitleDisplay" class="section-subtitle">Your Presence is Present Enough</p>
-                <p id="giftsTextDisplay" class="text-md md:text-lg max-w-2xl mx-auto mb-8 md:mb-10 text-slate-600">
-                    Your love and company on our wedding day is the only present we require! If you do wish to celebrate with a gift, a contribution to our honeymoon fund would be warmly appreciated. <strong class="font-semibold text-rose-700">[Registry link or details here]</strong>.
-                </p>
-            </div>
-        </section>
-
-        <footer class="bg-slate-800 text-rose-100 py-12 md:py-16 text-center px-4">
-            <p id="footerThankYouDisplay" class="font-playfair text-2xl md:text-4xl mb-3 md:mb-4 text-white">Thank You!</p>
-            <p id="footerCoupleNamesDisplay" class="mb-1 md:mb-2 text-md md:text-lg">Michael & Olivia</p>
-            <p id="footerCreditsDisplay" class="text-xs md:text-sm opacity-80">© <span id="year"></span>. With love, forever and always.</p>
-        </footer>
-    </div> 
-    <div id="fullPageInvitationContainer">
-        <div id="fullPageInvitationContent" class="invitation-display-view">
-            </div>
-    </div>
-
-
-    <script>
-        const SITE_CONTENT_KEY = 'weddingSiteContent_en'; 
-        const defaultSiteContent = { 
-            siteTitle: "Michael & Olivia's Wedding",
-            nav: { home: "Home", couple: "The Couple", story: "Our Story", event: "The Event", gallery: "Gallery", friends: "Wedding Party", rsvp: "RSVP" },
-            hero: { 
-                backgroundImage: 'https://images.pexels.com/photos/313707/pexels-photo-313707.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', 
-                groomName: "Michael", 
-                brideName: "Olivia", 
-                subtitle: "WE ARE GETTING MARRIED!", 
-                dateText: "DECEMBER 28, 2025" 
-            },
-            coupleSection: { 
-                title: "The Couple", 
-                subtitle: "Two Hearts, One Journey", 
-                groom: { name: "Michael Anderson", image: "https://images.pexels.com/photos/837140/pexels-photo-837140.jpeg?auto=compress&cs=tinysrgb&w=300", quote: "My heart is and always will be yours.", description: "A warm-hearted man who loves adventure and sunset views. He found his perfect other half in Olivia." }, 
-                bride: { name: "Olivia Smith", image: "https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=300", quote: "In you, I've found the love of my life and my closest, truest friend.", description: "A gentle soul with a love for art and good books. She found in Michael a steadfast shoulder and a sincere love." }
-            },
-            storySection: { 
-                title: "Our Love Story", 
-                subtitle: "The Journey to Forever", 
-                paragraph1: "Meeting was fate, becoming friends was a choice, but falling in love was beyond our control. Our story is written with laughter, shared dreams, and a love strong enough to overcome any challenge.", 
-                paragraph2: "From the first shy hellos to the moment we knew we couldn't live without each other, every step has been a testament to our love. Today, we invite you to witness the most beautiful chapter of our journey." 
-            },
-            eventSection: { 
-                title: "Event Information", 
-                subtitle: "You Are Joyfully Invited", 
-                ceremony: { icon: "https://images.pexels.com/photos/265855/pexels-photo-265855.jpeg?auto=compress&cs=tinysrgb&w=100", title: "The Ceremony", time: "10:00 AM - Saturday, December 28, 2025", venue: "St. Paul's Cathedral", address: "123 Cathedral Square, City Center", mapLink: "#" }, 
-                reception: { icon: "https://images.pexels.com/photos/265920/pexels-photo-265920.jpeg?auto=compress&cs=tinysrgb&w=100", title: "The Reception", time: "06:00 PM - Saturday, December 28, 2025", venue: "The Grand Ballroom", address: "456 Celebration Avenue, Downtown", mapLink: "#" }
-            },
-            gallerySection: { 
-                title: "Sweet Moments", 
-                subtitle: "Our Cherished Memories", 
-                images: [
-                    "https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg?auto=compress&cs=tinysrgb&w=400", 
-                    "https://images.pexels.com/photos/1024984/pexels-photo-1024984.jpeg?auto=compress&cs=tinysrgb&w=400", 
-                    "https://images.pexels.com/photos/2253870/pexels-photo-2253870.jpeg?auto=compress&cs=tinysrgb&w=400",
-                    "https://images.pexels.com/photos/1779479/pexels-photo-1779479.jpeg?auto=compress&cs=tinysrgb&w=400", 
-                    "https://images.pexels.com/photos/3014856/pexels-photo-3014856.jpeg?auto=compress&cs=tinysrgb&w=400", 
-                    "https://images.pexels.com/photos/931796/pexels-photo-931796.jpeg?auto=compress&cs=tinysrgb&w=400"
-                ] 
-            },
-            friendsSection: { 
-                title: "The Wedding Party", 
-                subtitle: "Our Beloved Friends", 
-                friends: [
-                    { name: "James Smith", role: "Best Man", image: "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg?auto=compress&cs=tinysrgb&w=200" },
-                    { name: "Emily Jones", role: "Maid of Honor", image: "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=200" },
-                    { name: "David Wilson", role: "Groomsman", image: "https://images.pexels.com/photos/846741/pexels-photo-846741.jpeg?auto=compress&cs=tinysrgb&w=200" },
-                    { name: "Sarah Brown", role: "Bridesmaid", image: "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200" }
-                ] 
-            },
-            rsvpSection: { 
-                title: "RSVP", 
-                subtitle: "Let Us Know If You Can Make It", 
-                deadlineText: "November 30, 2025" 
-            },
-            giftsSection: { 
-                title: "Gift Registry", 
-                subtitle: "Your Presence is Present Enough", 
-                text: "Your love and company on our wedding day is the only present we require! If you do wish to celebrate with a gift, a contribution to our honeymoon fund would be warmly appreciated. <strong class=\"font-semibold text-rose-700\">[Registry link or details here]</strong>." 
-            },
-            footer: { 
-                thankYou: "Thank You!", 
-                coupleNames: "Michael & Olivia", 
-                credits: "With love, forever and always." 
-            }
-        };
-
-        function getStoredOrDefaultContent() {
-            // Since content management from admin panel was removed, 
-            // this site will always use the defaultSiteContent defined above.
-            // If you re-introduce admin content management, you'd re-enable localStorage reading here.
-            return defaultSiteContent; 
-        }
-
-        function updateElementText(id, text) {
-            const element = document.getElementById(id);
-            if (element) element.textContent = text;
-        }
-        function updateElementHTML(id, html) {
-            const element = document.getElementById(id);
-            if (element) element.innerHTML = html;
-        }
-        function updateElementSrc(id, src, defaultSrc = 'https://placehold.co/150x150/E0E0E0/BDBDBD?text=Image') {
-            const element = document.getElementById(id);
-            if (element) {
-                element.src = src || defaultSrc; 
-                element.onerror = function() { this.src = defaultSrc; };
-            }
-        }
-        function updateElementHref(id, href) {
-            const element = document.getElementById(id);
-            if (element) element.href = href || '#';
-        }
-        function updateElementStyle(selector, property, value) {
-            const element = document.querySelector(selector);
-            if (element) element.style[property] = value;
-        }
-
-
-        function loadDynamicContent() {
-            const content = getStoredOrDefaultContent();
-
-            document.title = content.siteTitle || defaultSiteContent.siteTitle;
-
-            updateElementText('navGroomName', content.hero.groomName);
-            updateElementText('navBrideName', content.hero.brideName);
-            updateElementText('navLinkHome', content.nav.home);
-            updateElementText('navLinkCouple', content.nav.couple);
-            updateElementText('navLinkStory', content.nav.story);
-            updateElementText('navLinkEvent', content.nav.event);
-            updateElementText('navLinkGallery', content.nav.gallery);
-            updateElementText('navLinkFriends', content.nav.friends);
-            updateElementText('navLinkRsvp', content.nav.rsvp);
-            document.querySelectorAll('.nav-link-mobile').forEach(link => {
-                const navId = link.dataset.navId;
-                if (navId === 'navLinkHome') link.textContent = content.nav.home;
-                if (navId === 'navLinkCouple') link.textContent = content.nav.couple;
-                if (navId === 'navLinkStory') link.textContent = content.nav.story;
-                if (navId === 'navLinkEvent') link.textContent = content.nav.event;
-                if (navId === 'navLinkGallery') link.textContent = content.nav.gallery;
-                if (navId === 'navLinkFriends') link.textContent = content.nav.friends;
-                if (navId === 'navLinkRsvp') link.textContent = content.nav.rsvp;
-            });
-
-
-            updateElementStyle('#home.hero-bg', 'backgroundImage', `url('${content.hero.backgroundImage}')`);
-            updateElementText('heroGroomNameDisplay', content.hero.groomName);
-            updateElementText('heroBrideNameDisplay', content.hero.brideName);
-            updateElementText('heroSubtitleText', content.hero.subtitle);
-            updateElementText('heroDateTextDisplay', content.hero.dateText);
-
-            updateElementText('coupleSectionTitleDisplay', content.coupleSection.title);
-            updateElementText('coupleSectionSubtitleDisplay', content.coupleSection.subtitle);
-            updateElementSrc('groomImageDisplay', content.coupleSection.groom.image, defaultSiteContent.coupleSection.groom.image);
-            updateElementText('groomNameDisplay', content.coupleSection.groom.name);
-            updateElementText('groomQuoteDisplay', content.coupleSection.groom.quote);
-            updateElementText('groomDescDisplay', content.coupleSection.groom.description);
-            updateElementSrc('brideImageDisplay', content.coupleSection.bride.image, defaultSiteContent.coupleSection.bride.image);
-            updateElementText('brideNameDisplay', content.coupleSection.bride.name);
-            updateElementText('brideQuoteDisplay', content.coupleSection.bride.quote);
-            updateElementText('brideDescDisplay', content.coupleSection.bride.description);
-
-            updateElementText('storySectionTitleDisplay', content.storySection.title);
-            updateElementText('storySectionSubtitleDisplay', content.storySection.subtitle);
-            updateElementText('storyPara1Display', content.storySection.paragraph1);
-            updateElementText('storyPara2Display', content.storySection.paragraph2);
-
-            updateElementText('eventSectionTitleDisplay', content.eventSection.title);
-            updateElementText('eventSectionSubtitleDisplay', content.eventSection.subtitle);
-            updateElementSrc('ceremonyIconDisplay', content.eventSection.ceremony.icon, defaultSiteContent.eventSection.ceremony.icon);
-            updateElementText('ceremonyTitleDisplay', content.eventSection.ceremony.title);
-            updateElementText('ceremonyTimeDisplay', content.eventSection.ceremony.time);
-            updateElementText('ceremonyVenueDisplay', content.eventSection.ceremony.venue);
-            updateElementText('ceremonyAddressDisplay', content.eventSection.ceremony.address);
-            updateElementHref('ceremonyMapLinkDisplay', content.eventSection.ceremony.mapLink);
-            updateElementSrc('receptionIconDisplay', content.eventSection.reception.icon, defaultSiteContent.eventSection.reception.icon);
-            updateElementText('receptionTitleDisplay', content.eventSection.reception.title);
-            updateElementText('receptionTimeDisplay', content.eventSection.reception.time);
-            updateElementText('receptionVenueDisplay', content.eventSection.reception.venue);
-            updateElementText('receptionAddressDisplay', content.eventSection.reception.address);
-            updateElementHref('receptionMapLinkDisplay', content.eventSection.reception.mapLink);
-
-            updateElementText('gallerySectionTitleDisplay', content.gallerySection.title);
-            updateElementText('gallerySectionSubtitleDisplay', content.gallerySection.subtitle);
-            const galleryContainer = document.getElementById('galleryImageContainer');
-            if (galleryContainer) {
-                galleryContainer.innerHTML = ''; 
-                content.gallerySection.images.forEach((imgUrl, index) => {
-                    const defaultImgUrl = defaultSiteContent.gallerySection.images[index] || 'https://placehold.co/600x600/E0E0E0/BDBDBD?text=Image';
-                    const currentImgUrl = imgUrl || defaultImgUrl;
-                    const div = document.createElement('div');
-                    div.className = 'gallery-item';
-                    const img = document.createElement('img');
-                    img.src = currentImgUrl;
-                    img.alt = `Wedding Moment ${index + 1}`;
-                    img.className = 'w-full h-auto object-cover aspect-square';
-                    img.onerror = function() { this.src = 'https://placehold.co/600x600/E0E0E0/BDBDBD?text=Error+Loading'; };
-                    div.appendChild(img);
-                    galleryContainer.appendChild(div);
-                });
-            }
-
-            updateElementText('friendsSectionTitleDisplay', content.friendsSection.title);
-            updateElementText('friendsSectionSubtitleDisplay', content.friendsSection.subtitle);
-            const friendsContainer = document.getElementById('friendsContainer');
-            if (friendsContainer) {
-                friendsContainer.innerHTML = ''; 
-                content.friendsSection.friends.forEach((friendData, index) => {
-                    const defaultFriend = defaultSiteContent.friendsSection.friends[index] || {name: 'Friend', role: 'Role', image: 'https://placehold.co/150x150/E0E0E0/BDBDBD?text=Person'};
-                    const friend = { ...defaultFriend, ...friendData };
-                    if (friend.name && friend.image) {
-                        const div = document.createElement('div');
-                        div.className = 'text-center';
-                        const img = document.createElement('img');
-                        img.src = friend.image;
-                        img.alt = friend.name;
-                        img.className = 'person-image';
-                        img.onerror = function() { this.src = 'https://placehold.co/150x150/E0E0E0/BDBDBD?text=Error+Loading'; };
-                        const nameH4 = document.createElement('h4');
-                        nameH4.className = 'font-semibold text-md md:text-lg text-rose-700';
-                        nameH4.textContent = friend.name;
-                        const roleP = document.createElement('p');
-                        roleP.className = 'text-xs md:text-sm text-slate-500';
-                        roleP.textContent = friend.role;
-                        div.appendChild(img);
-                        div.appendChild(nameH4);
-                        div.appendChild(roleP);
-                        friendsContainer.appendChild(div);
-                    }
-                });
-            }
+        {/* PHẦN 2: CÔNG CỤ TÍNH TOÁN CHI TIẾT */}
+        {activeCard ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             
-            updateElementText('rsvpSectionTitleDisplay', content.rsvpSection.title);
-            updateElementText('rsvpSectionSubtitleDisplay', content.rsvpSection.subtitle);
-            updateElementText('rsvpDeadlineTextDisplay', content.rsvpSection.deadlineText);
-
-            updateElementText('giftsSectionTitleDisplay', content.giftsSection.title);
-            updateElementText('giftsSectionSubtitleDisplay', content.giftsSection.subtitle);
-            updateElementHTML('giftsTextDisplay', content.giftsSection.text); 
-
-            updateElementText('footerThankYouDisplay', content.footer.thankYou);
-            updateElementText('footerCoupleNamesDisplay', content.footer.coupleNames);
-            updateElementHTML('footerCreditsDisplay', `© <span id="year">${new Date().getFullYear()}</span>. ${content.footer.credits}`);
-        }
-
-
-        window.addEventListener('load', function() {
-            loadDynamicContent(); 
-
-            const preloader = document.getElementById('preloader');
-            if (preloader) {
-                setTimeout(() => {
-                    preloader.style.transition = 'opacity 0.5s ease';
-                    preloader.style.opacity = '0';
-                    setTimeout(() => preloader.style.display = 'none', 500);
-                }, 500);
-            }
-            handleInvitationDisplayFromUrl(); 
-        });
-
-        const countdownDate = new Date("Dec 28, 2025 00:00:00").getTime(); 
-        const countdownFunction = setInterval(function() {
-            const now = new Date().getTime();
-            const distance = countdownDate - now;
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            const elDays = document.getElementById("days");
-            const elHours = document.getElementById("hours");
-            const elMinutes = document.getElementById("minutes");
-            const elSeconds = document.getElementById("seconds");
-
-            if(elDays) elDays.innerText = String(days).padStart(2, '0');
-            if(elHours) elHours.innerText = String(hours).padStart(2, '0');
-            if(elMinutes) elMinutes.innerText = String(minutes).padStart(2, '0');
-            if(elSeconds) elSeconds.innerText = String(seconds).padStart(2, '0');
-
-            if (distance < 0) {
-                clearInterval(countdownFunction);
-                const countdownEl = document.getElementById("countdown");
-                if(countdownEl) countdownEl.innerHTML = "<div class='col-span-full text-lg md:text-2xl'>The big day has arrived!</div>";
-            }
-        }, 1000);
-
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const mobileNavMenu = document.getElementById('mobileNavMenu');
-        if (hamburgerBtn && mobileNavMenu) {
-            hamburgerBtn.addEventListener('click', () => {
-                mobileNavMenu.classList.toggle('active');
-            });
-            mobileNavMenu.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileNavMenu.classList.remove('active');
-                });
-            });
-        }
-
-        document.querySelectorAll('a[href^="#"]:not([href="thiepmoi.html"])').forEach(anchor => { 
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                const targetId = href.substring(1);
-                const targetElement = document.getElementById(targetId);
-
-                if (href.startsWith('#') && href.length > 1 && targetElement) {
-                    e.preventDefault();
-                    if (document.getElementById('fullPageInvitationContainer').classList.contains('active')) {
-                       closeInvitationView();
-                    }
-                    if (mobileNavMenu && mobileNavMenu.classList.contains('active')) {
-                        mobileNavMenu.classList.remove('active');
-                    }
-                    targetElement.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-        
-        const rsvpForm = document.getElementById('rsvpForm');
-        const rsvpMessage = document.getElementById('rsvpMessage');
-        if (rsvpForm) {
-            rsvpForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const nameInput = document.getElementById('name');
-                const name = nameInput ? nameInput.value.trim() || 'Guest' : 'Guest';
-                const attendanceInput = document.querySelector('input[name="attendance"]:checked');
-                const attendance = attendanceInput ? attendanceInput.value : 'yes';
-
-                if (attendance === 'yes') {
-                    rsvpMessage.innerHTML = `<p class="text-green-700 font-medium py-2 px-3 md:py-3 md:px-4 bg-green-100 rounded-md border border-green-200 text-sm md:text-base">Thank you, ${name}! We look forward to celebrating with you.</p>`;
-                } else {
-                    rsvpMessage.innerHTML = `<p class="text-orange-700 font-medium py-2 px-3 md:py-3 md:px-4 bg-orange-100 rounded-md border border-orange-200 text-sm md:text-base">Thank you for your response, ${name}. We'll miss you!</p>`;
-                }
+            {/* Input Kế Hoạch */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className={`rounded-xl shadow-sm border p-6 relative overflow-hidden transition-colors ${theme.cardBg} ${isDarkMode ? 'border-indigo-900' : 'border-indigo-100'}`}>
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <CreditCard className="w-24 h-24 text-indigo-600" />
+                </div>
                 
-                if (nameInput) nameInput.value = '';
-                const guestsInput = document.getElementById('guests');
-                if (guestsInput) guestsInput.value = '1';
-                const messageInput = document.getElementById('message');
-                if (messageInput) messageInput.value = '';
-                const yesRadio = rsvpForm.querySelector('input[name="attendance"][value="yes"]');
-                if (yesRadio) yesRadio.checked = true;
+                <h2 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Kế Hoạch Trả Nợ</h2>
+                <p className="text-sm text-indigo-500 font-medium mb-6 flex items-center">
+                  Đang tính cho: {activeCard.bankName}
+                </p>
 
-                setTimeout(() => { if(rsvpMessage) rsvpMessage.innerHTML = ''; }, 7000);
-            });
-        }
-
-        const sections = document.querySelectorAll('.fade-in-section:not(.is-visible)');
-        const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 }; 
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                }
-            });
-        }, observerOptions);
-        sections.forEach(section => { observer.observe(section); });
-
-        const mainPageContent = document.getElementById('mainPageContent');
-        const fullPageInvitationContainer = document.getElementById('fullPageInvitationContainer');
-        const fullPageInvitationContent = document.getElementById('fullPageInvitationContent');
-
-        function displayInvitation(guestName, invitationId) {
-            const rsvpStatus = localStorage.getItem(`rsvp_status_en_${invitationId}`); 
-            let rsvpButtonsHTML = '';
-            let rsvpResponseMessage = '';
-            const siteContent = getStoredOrDefaultContent(); 
-
-            if (rsvpStatus === 'attending') {
-                rsvpResponseMessage = '<p id="invitationRsvpMessage" class="text-green-600 text-sm md:text-base">You have confirmed you will be attending. Thank you!</p>';
-            } else if (rsvpStatus === 'not_attending') {
-                rsvpResponseMessage = '<p id="invitationRsvpMessage" class="text-orange-600 text-sm md:text-base">You have confirmed you cannot attend. We will miss you!</p>';
-            } else {
-                 rsvpButtonsHTML = `
-                    <div class="mt-4 md:mt-6 flex flex-col sm:flex-row justify-center items-center gap-2 md:gap-4" id="invitationRsvpButtons">
-                        <button onclick="handleGuestRsvp('${invitationId}', 'attending')" class="btn-primary btn-rsvp w-full sm:w-auto">🎉 Will Attend</button>
-                        <button onclick="handleGuestRsvp('${invitationId}', 'not_attending')" class="btn-secondary btn-rsvp w-full sm:w-auto">😔 Cannot Attend</button>
+                <div className="space-y-4">
+                  <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className={theme.subText}>Dư nợ hiện tại</span>
+                      <span className="font-semibold">{formatCurrency(activeCard.balance)}</span>
                     </div>
-                `;
-            }
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className={theme.subText}>Lãi suất</span>
+                      <span className="font-semibold">{activeCard.interestRate}% / năm</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className={theme.subText}>Thanh toán tối thiểu</span>
+                      <span className={`font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{formatCurrency(activeCard.minPayment)}</span>
+                    </div>
+                  </div>
 
-            const invitationHTML = `
-                <p class="invitation-header">You are cordially invited to celebrate with us</p>
-                <p class="invitation-guest-name">${guestName ? guestName : '[Guest Name(s)]'}</p>
-                <p class="text-sm md:text-base">as we join our lives in marriage</p>
-                <p class="invitation-couple-names">${siteContent.hero.groomName} <span class="heart-icon text-rose-500">❤</span> ${siteContent.hero.brideName}</p>
-                <div class="invitation-details mt-3 md:mt-4">
-                    <p><strong>${siteContent.eventSection.ceremony.title}:</strong> ${siteContent.eventSection.ceremony.time}</p>
-                    <p>At ${siteContent.eventSection.ceremony.venue}</p>
-                    <p class="mt-1 md:mt-2"><strong>${siteContent.eventSection.reception.title}:</strong> ${siteContent.eventSection.reception.time}</p>
-                    <p>At ${siteContent.eventSection.reception.venue}</p>
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                      Bạn dự định trả bao nhiêu mỗi tháng?
+                    </label>
+                    <div className="relative">
+                       <input
+                        type="number"
+                        value={plannedMonthlyPayment}
+                        onChange={(e) => setPlannedMonthlyPayment(Number(e.target.value))}
+                        className={`w-full pl-4 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg font-semibold ${isDarkMode ? 'bg-slate-900 border-indigo-900 text-indigo-400' : 'bg-indigo-50/50 border-indigo-100 text-indigo-700'}`}
+                      />
+                    </div>
+                    
+                    {plannedMonthlyPayment < activeCard.minPayment && (
+                       <p className="text-xs text-red-500 mt-2 flex items-center">
+                         <AlertCircle className="w-3 h-3 mr-1" /> 
+                         Nên trả lớn hơn mức tối thiểu ({formatCurrency(activeCard.minPayment)})
+                       </p>
+                    )}
+                  </div>
+                  
+                  {/* Summary Cards Mini */}
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                     <div className={`p-3 rounded-lg border ${isDarkMode ? 'bg-green-900/20 border-green-900/30' : 'bg-green-50 border-green-100'}`}>
+                        <p className={`text-xs mb-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>Thời gian trả</p>
+                        <p className={`font-bold text-lg ${isDarkMode ? 'text-green-400' : 'text-green-800'}`}>
+                          {summary.isPayable ? `${summary.months} tháng` : "∞"}
+                        </p>
+                     </div>
+                     <div className={`p-3 rounded-lg border ${isDarkMode ? 'bg-red-900/20 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
+                        <p className={`text-xs mb-1 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>Tổng lãi phải chịu</p>
+                        <p className={`font-bold text-lg ${isDarkMode ? 'text-red-400' : 'text-red-800'}`}>
+                          {summary.isPayable ? formatCurrency(summary.totalInterest) : "---"}
+                        </p>
+                     </div>
+                  </div>
                 </div>
-                <p class="invitation-footer mt-4 md:mt-6">Your presence would be a gift to us!</p>
-                ${rsvpButtonsHTML}
-                <div id="invitationRsvpMessageContainer" class="mt-3 md:mt-4">${rsvpResponseMessage}</div>
-                <button onclick="closeInvitationView()" class="btn-primary mt-6 md:mt-8 text-xs md:text-sm">Back to Main Site</button>
-            `;
-            fullPageInvitationContent.innerHTML = invitationHTML;
-            mainPageContent.style.display = 'none';
-            fullPageInvitationContainer.classList.add('active');
-            document.body.scrollTop = 0; 
-            document.documentElement.scrollTop = 0; 
-        }
-        
-        window.handleGuestRsvp = function(invitationId, status) { 
-            localStorage.setItem(`rsvp_status_en_${invitationId}`, status); 
-            const rsvpButtonsDiv = document.getElementById('invitationRsvpButtons');
-            const rsvpMessageContainer = document.getElementById('invitationRsvpMessageContainer');
+              </div>
 
-            if (rsvpButtonsDiv) rsvpButtonsDiv.style.display = 'none';
-            if (rsvpMessageContainer) {
-                if (status === 'attending') {
-                    rsvpMessageContainer.innerHTML = '<p id="invitationRsvpMessage" class="text-green-600 font-semibold text-sm md:text-base">Thank you for confirming your attendance! We look forward to seeing you.</p>';
-                } else {
-                    rsvpMessageContainer.innerHTML = '<p id="invitationRsvpMessage" class="text-orange-600 font-semibold text-sm md:text-base">Thank you for your response. We are sorry you cannot make it.</p>';
-                }
-            }
-        }
+              {/* Warning Box */}
+              {!summary.isPayable && (
+                <div className={`border rounded-xl p-4 flex items-start space-x-3 ${isDarkMode ? 'bg-red-900/20 border-red-900/30' : 'bg-red-50 border-red-200'}`}>
+                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <p className={`text-sm ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>
+                    Số tiền trả hàng tháng quá thấp so với tiền lãi phát sinh. Hãy tăng số tiền thanh toán lên trên mức <b>{formatCurrency(calculateMonthlyInterest(activeCard.balance, activeCard.interestRate))}</b>.
+                  </p>
+                </div>
+              )}
+            </div>
 
+            {/* Bảng Lịch Trình Chi Tiết */}
+            <div className="lg:col-span-2">
+              <div className={`rounded-xl shadow-sm border h-full flex flex-col overflow-hidden transition-colors ${theme.cardBg} ${theme.cardBorder}`}>
+                <div className={`px-6 py-4 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+                  <h3 className={`font-semibold flex items-center ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                    <Calendar className="w-4 h-4 mr-2 text-slate-400" />
+                    Lịch Trình Chi Tiết
+                  </h3>
+                  {summary.isPayable && (
+                    <span className={`text-xs font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Kết thúc sau {Math.floor(summary.months / 12)} năm {summary.months % 12} tháng
+                    </span>
+                  )}
+                </div>
 
-        function closeInvitationView() {
-            fullPageInvitationContainer.classList.remove('active');
-            mainPageContent.style.display = 'block';
-            history.pushState(null, null, window.location.pathname + window.location.search.split('&invite_id=')[0]); 
-        }
-        
-        function handleInvitationDisplayFromUrl() {
-            if (window.location.hash.startsWith('#view-invite')) {
-                const params = new URLSearchParams(window.location.hash.substring(window.location.hash.indexOf('?') + 1));
-                const guestName = params.get('guest');
-                const invitationId = params.get('invite_id'); 
-                if (guestName && invitationId) {
-                    displayInvitation(decodeURIComponent(guestName), invitationId);
-                } else if (guestName) { 
-                     displayInvitation(decodeURIComponent(guestName), null); 
-                }
-            } else { 
-                if (fullPageInvitationContainer.classList.contains('active')) {
-                    closeInvitationView();
-                }
-            }
-        }
-        window.addEventListener('hashchange', handleInvitationDisplayFromUrl);
+                <div className="flex-1 overflow-auto max-h-[600px] p-0">
+                  {summary.isPayable && schedule.length > 0 ? (
+                    <table className="w-full text-sm text-left">
+                      <thead className={`sticky top-0 z-10 shadow-sm text-xs uppercase font-semibold ${theme.tableHeader}`}>
+                        <tr>
+                          <th className={`px-4 py-3 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Tháng</th>
+                          <th className={`px-4 py-3 text-right ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Trả Gốc</th>
+                          <th className={`px-4 py-3 text-right text-red-500 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Trả Lãi</th>
+                          <th className={`px-4 py-3 text-right ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Dư Nợ Còn Lại</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-50'}`}>
+                        {schedule.map((row) => (
+                          <tr key={row.month} className={`transition-colors ${isDarkMode ? 'hover:bg-indigo-900/20' : 'hover:bg-indigo-50/30'}`}>
+                            <td className={`px-4 py-3 font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Tháng {row.month}</td>
+                            <td className="px-4 py-3 text-right">{formatCurrency(row.principal)}</td>
+                            <td className="px-4 py-3 text-right text-red-500">{formatCurrency(row.interest)}</td>
+                            <td className={`px-4 py-3 text-right font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                              {row.remaining === 0 ? (
+                                <span className={`inline-flex items-center font-bold justify-end ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                                  Xong! <CheckCircle className="w-3 h-3 ml-1" />
+                                </span>
+                              ) : (
+                                formatCurrency(row.remaining)
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                       <TrendingDown className="w-12 h-12 mb-3 opacity-20" />
+                       <p>Không có dữ liệu hoặc kế hoạch trả nợ không khả thi.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
-    </script>
+          </div>
+        ) : (
+          <div className={`text-center py-12 rounded-xl border border-dashed transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}>
+            <p className={theme.subText}>Vui lòng chọn một thẻ từ danh sách trên để tính toán phương án trả nợ.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
-</body>
-</html>
+export default App;
