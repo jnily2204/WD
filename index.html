@@ -1,458 +1,486 @@
-import React, { useState, useEffect } from 'react';
-import { CreditCard, DollarSign, Calendar, TrendingDown, AlertCircle, Landmark, Plus, Trash2, Edit2, CheckCircle, ArrowRight, Moon, Sun } from 'lucide-react';
-
-const App = () => {
-  // --- STATE GIAO DIỆN ---
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // --- STATE QUẢN LÝ DANH SÁCH THẺ ---
-  const [cards, setCards] = useState([
-    {
-      id: 1,
-      bankName: 'Techcombank Visa',
-      balance: 20000000,
-      interestRate: 30, // % năm
-      minPayment: 1000000,
-      paymentDate: 5 // Ngày 5 hàng tháng
-    },
-    {
-      id: 2,
-      bankName: 'VPBank Mastercard',
-      balance: 15000000,
-      interestRate: 36,
-      minPayment: 750000,
-      paymentDate: 20
-    }
-  ]);
-
-  // State cho form thêm/sửa thẻ
-  const [form, setForm] = useState({
-    bankName: '',
-    balance: '',
-    interestRate: '',
-    minPayment: '',
-    paymentDate: ''
-  });
-
-  // --- STATE CHO CÔNG TÍNH TOÁN ---
-  const [selectedCardId, setSelectedCardId] = useState(1);
-  const [plannedMonthlyPayment, setPlannedMonthlyPayment] = useState(2000000);
-  
-  const [schedule, setSchedule] = useState([]);
-  const [summary, setSummary] = useState({
-    totalInterest: 0,
-    totalPaid: 0,
-    months: 0,
-    isPayable: true
-  });
-
-  // --- HÀM HỖ TRỢ ---
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
-  const calculateMonthlyInterest = (balance, rate) => {
-    return balance * (rate / 100 / 12);
-  };
-
-  // --- LOGIC ---
-  const handleAddCard = () => {
-    if (!form.bankName || !form.balance) return;
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tính Nợ Thẻ Tín Dụng</title>
     
-    const newCard = {
-      id: Date.now(),
-      bankName: form.bankName,
-      balance: parseFloat(form.balance),
-      interestRate: parseFloat(form.interestRate) || 0,
-      minPayment: parseFloat(form.minPayment) || 0,
-      paymentDate: parseInt(form.paymentDate) || 1
-    };
+    <!-- Nhúng Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Cấu hình Tailwind để hỗ trợ Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-    setCards([...cards, newCard]);
-    setForm({ bankName: '', balance: '', interestRate: '', minPayment: '', paymentDate: '' });
-    setSelectedCardId(newCard.id);
-    setPlannedMonthlyPayment(Math.max(newCard.minPayment, 2000000));
-  };
+    <!-- Nhúng Font chữ & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-  const handleDeleteCard = (id) => {
-    const newCards = cards.filter(c => c.id !== id);
-    setCards(newCards);
-    if (selectedCardId === id && newCards.length > 0) {
-      setSelectedCardId(newCards[0].id);
-    } else if (newCards.length === 0) {
-      setSelectedCardId(null);
-    }
-  };
-
-  useEffect(() => {
-    const card = cards.find(c => c.id === selectedCardId);
-    if (!card) {
-      setSchedule([]);
-      return;
-    }
-
-    let currentBalance = card.balance;
-    const rate = card.interestRate;
-    const payment = parseFloat(plannedMonthlyPayment);
-
-    if (!currentBalance || !payment) return;
-
-    const monthlyRate = rate / 100 / 12;
-    let tempBalance = currentBalance;
-    let totalInterest = 0;
-    let months = 0;
-    const newSchedule = [];
-
-    if (tempBalance * monthlyRate >= payment) {
-      setSummary({ totalInterest: 0, totalPaid: 0, months: 0, isPayable: false });
-      setSchedule([]);
-      return;
-    }
-
-    while (tempBalance > 0 && months < 360) {
-      months++;
-      const interestPayment = tempBalance * monthlyRate;
-      let principalPayment = payment - interestPayment;
-      
-      if (tempBalance < principalPayment) {
-        principalPayment = tempBalance;
-      }
-
-      totalInterest += interestPayment;
-      tempBalance -= principalPayment;
-
-      newSchedule.push({
-        month: months,
-        interest: interestPayment,
-        principal: principalPayment,
-        remaining: tempBalance < 0 ? 0 : tempBalance,
-        totalPayment: interestPayment + principalPayment
-      });
-    }
-
-    setSchedule(newSchedule);
-    setSummary({
-      totalInterest: totalInterest,
-      totalPaid: card.balance + totalInterest,
-      months: months,
-      isPayable: months < 360
-    });
-
-  }, [selectedCardId, plannedMonthlyPayment, cards]);
-
-  const activeCard = cards.find(c => c.id === selectedCardId);
-
-  // --- STYLE UTILS ---
-  const theme = {
-    bg: isDarkMode ? 'bg-slate-900' : 'bg-slate-50',
-    text: isDarkMode ? 'text-slate-100' : 'text-slate-800',
-    cardBg: isDarkMode ? 'bg-slate-800' : 'bg-white',
-    cardBorder: isDarkMode ? 'border-slate-700' : 'border-slate-200',
-    subText: isDarkMode ? 'text-slate-400' : 'text-slate-500',
-    tableHeader: isDarkMode ? 'bg-slate-700/50 text-slate-300' : 'bg-slate-50 text-slate-500',
-    tableRowHover: isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50',
-    inputBg: isDarkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300',
-    accentBg: isDarkMode ? 'bg-indigo-900/30' : 'bg-indigo-50',
-  };
-
-  return (
-    <div className={`min-h-screen font-sans p-4 md:p-8 transition-colors duration-300 ${theme.bg} ${theme.text}`}>
-      <div className="max-w-6xl mx-auto space-y-8">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Tùy chỉnh thanh cuộn cho đẹp hơn */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 bg-indigo-600 rounded-lg shadow-lg">
-              <CreditCard className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Quản Lý & Tính Nợ Thẻ Tín Dụng</h1>
-              <p className={theme.subText}>Theo dõi danh sách thẻ và lập kế hoạch trả nợ</p>
-            </div>
-          </div>
-          
-          {/* Nút Toggle Dark Mode */}
-          <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`p-3 rounded-full shadow-sm transition-all ${isDarkMode ? 'bg-slate-700 text-yellow-400 hover:bg-slate-600' : 'bg-white text-slate-600 hover:bg-slate-100'}`}
-          >
-            {isDarkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
-          </button>
-        </div>
+        /* Hiệu ứng chuyển động mượt */
+        .transition-all-300 { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 transition-colors duration-300 antialiased selection:bg-indigo-500 selection:text-white">
 
-        {/* PHẦN 1: DANH SÁCH THẺ */}
-        <div className={`rounded-xl shadow-sm border overflow-hidden transition-colors ${theme.cardBg} ${theme.cardBorder}`}>
-          <div className={`p-6 border-b flex justify-between items-center ${isDarkMode ? 'border-slate-700 bg-slate-800' : 'border-slate-100 bg-slate-50'}`}>
-            <h2 className={`font-semibold text-lg flex items-center ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
-              <Landmark className="w-5 h-5 mr-2 text-indigo-600" /> 
-              Danh Sách Thẻ Cần Trả
-            </h2>
-            <span className={`text-sm px-3 py-1 rounded border ${isDarkMode ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-white border-slate-200 text-slate-500'}`}>
-              Tổng nợ: <span className="font-bold text-red-500">{formatCurrency(cards.reduce((sum, c) => sum + c.balance, 0))}</span>
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className={`uppercase font-semibold text-xs ${theme.tableHeader}`}>
-                <tr>
-                  <th className="px-6 py-4">Ngân hàng / Tên Thẻ</th>
-                  <th className="px-6 py-4 text-right">Số tiền nợ</th>
-                  <th className="px-6 py-4 text-right">Lãi suất năm</th>
-                  <th className="px-6 py-4 text-right text-red-500">Lãi tháng này (Est)</th>
-                  <th className="px-6 py-4 text-right">Thanh toán tối thiểu</th>
-                  <th className="px-6 py-4 text-center">Ngày thanh toán</th>
-                  <th className="px-6 py-4 text-center">Hành động</th>
-                </tr>
-              </thead>
-              <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-100'}`}>
-                {cards.map((card) => (
-                  <tr 
-                    key={card.id} 
-                    onClick={() => {
-                      setSelectedCardId(card.id);
-                      setPlannedMonthlyPayment(Math.max(card.minPayment, 2000000));
-                    }}
-                    className={`cursor-pointer transition-colors ${selectedCardId === card.id ? theme.accentBg : theme.tableRowHover}`}
-                  >
-                    <td className={`px-6 py-4 font-medium flex items-center ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                      {selectedCardId === card.id && <CheckCircle className="w-4 h-4 text-indigo-500 mr-2" />}
-                      {card.bankName}
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold">{formatCurrency(card.balance)}</td>
-                    <td className="px-6 py-4 text-right">{card.interestRate}%</td>
-                    <td className="px-6 py-4 text-right text-red-500 font-medium">
-                      {formatCurrency(calculateMonthlyInterest(card.balance, card.interestRate))}
-                    </td>
-                    <td className={`px-6 py-4 text-right ${theme.subText}`}>{formatCurrency(card.minPayment)}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-1 rounded text-xs ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
-                        Ngày {card.paymentDate}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteCard(card.id); }}
-                        className={`p-1 rounded transition ${isDarkMode ? 'hover:bg-red-900/50 text-slate-500 hover:text-red-400' : 'hover:bg-red-100 text-slate-400 hover:text-red-500'}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                
-                {/* Row Input thêm thẻ mới */}
-                <tr className={`border-t-2 ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                  <td className="px-4 py-3">
-                    <input 
-                      type="text" 
-                      placeholder="VD: VIB Online Plus..." 
-                      className={`w-full text-sm p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
-                      value={form.bankName}
-                      onChange={e => setForm({...form, bankName: e.target.value})}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <input 
-                      type="number" 
-                      placeholder="Số dư nợ..." 
-                      className={`w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
-                      value={form.balance}
-                      onChange={e => setForm({...form, balance: e.target.value})}
-                    />
-                  </td>
-                  <td className="px-4 py-3 w-24">
-                    <input 
-                      type="number" 
-                      placeholder="%" 
-                      className={`w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
-                      value={form.interestRate}
-                      onChange={e => setForm({...form, interestRate: e.target.value})}
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center text-xs text-slate-400">---</td>
-                  <td className="px-4 py-3">
-                    <input 
-                      type="number" 
-                      placeholder="Min Payment..." 
-                      className={`w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
-                      value={form.minPayment}
-                      onChange={e => setForm({...form, minPayment: e.target.value})}
-                    />
-                  </td>
-                  <td className="px-4 py-3 w-24">
-                    <input 
-                      type="number" 
-                      placeholder="Ngày" 
-                      max="31"
-                      className={`w-full text-sm p-2 text-center rounded focus:ring-2 focus:ring-indigo-500 outline-none ${theme.inputBg}`}
-                      value={form.paymentDate}
-                      onChange={e => setForm({...form, paymentDate: e.target.value})}
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button 
-                      onClick={handleAddCard}
-                      className="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded text-sm font-medium transition shadow-sm"
-                    >
-                      <Plus className="w-4 h-4 mr-1" /> Thêm
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* PHẦN 2: CÔNG CỤ TÍNH TOÁN CHI TIẾT */}
-        {activeCard ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="min-h-screen p-4 md:p-8">
+        <div class="max-w-6xl mx-auto space-y-8">
             
-            {/* Input Kế Hoạch */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className={`rounded-xl shadow-sm border p-6 relative overflow-hidden transition-colors ${theme.cardBg} ${isDarkMode ? 'border-indigo-900' : 'border-indigo-100'}`}>
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                   <CreditCard className="w-24 h-24 text-indigo-600" />
+            <!-- HEADER -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-indigo-600 rounded-lg shadow-lg">
+                        <i data-lucide="credit-card" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold dark:text-white text-slate-900">Quản Lý & Tính Nợ Thẻ Tín Dụng</h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm">Theo dõi danh sách thẻ và lập kế hoạch trả nợ</p>
+                    </div>
                 </div>
                 
-                <h2 className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Kế Hoạch Trả Nợ</h2>
-                <p className="text-sm text-indigo-500 font-medium mb-6 flex items-center">
-                  Đang tính cho: {activeCard.bankName}
-                </p>
-
-                <div className="space-y-4">
-                  <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-slate-700/50 border-slate-600' : 'bg-slate-50 border-slate-200'}`}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className={theme.subText}>Dư nợ hiện tại</span>
-                      <span className="font-semibold">{formatCurrency(activeCard.balance)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className={theme.subText}>Lãi suất</span>
-                      <span className="font-semibold">{activeCard.interestRate}% / năm</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className={theme.subText}>Thanh toán tối thiểu</span>
-                      <span className={`font-semibold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{formatCurrency(activeCard.minPayment)}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                      Bạn dự định trả bao nhiêu mỗi tháng?
-                    </label>
-                    <div className="relative">
-                       <input
-                        type="number"
-                        value={plannedMonthlyPayment}
-                        onChange={(e) => setPlannedMonthlyPayment(Number(e.target.value))}
-                        className={`w-full pl-4 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg font-semibold ${isDarkMode ? 'bg-slate-900 border-indigo-900 text-indigo-400' : 'bg-indigo-50/50 border-indigo-100 text-indigo-700'}`}
-                      />
-                    </div>
-                    
-                    {plannedMonthlyPayment < activeCard.minPayment && (
-                       <p className="text-xs text-red-500 mt-2 flex items-center">
-                         <AlertCircle className="w-3 h-3 mr-1" /> 
-                         Nên trả lớn hơn mức tối thiểu ({formatCurrency(activeCard.minPayment)})
-                       </p>
-                    )}
-                  </div>
-                  
-                  {/* Summary Cards Mini */}
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                     <div className={`p-3 rounded-lg border ${isDarkMode ? 'bg-green-900/20 border-green-900/30' : 'bg-green-50 border-green-100'}`}>
-                        <p className={`text-xs mb-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>Thời gian trả</p>
-                        <p className={`font-bold text-lg ${isDarkMode ? 'text-green-400' : 'text-green-800'}`}>
-                          {summary.isPayable ? `${summary.months} tháng` : "∞"}
-                        </p>
-                     </div>
-                     <div className={`p-3 rounded-lg border ${isDarkMode ? 'bg-red-900/20 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
-                        <p className={`text-xs mb-1 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>Tổng lãi phải chịu</p>
-                        <p className={`font-bold text-lg ${isDarkMode ? 'text-red-400' : 'text-red-800'}`}>
-                          {summary.isPayable ? formatCurrency(summary.totalInterest) : "---"}
-                        </p>
-                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Warning Box */}
-              {!summary.isPayable && (
-                <div className={`border rounded-xl p-4 flex items-start space-x-3 ${isDarkMode ? 'bg-red-900/20 border-red-900/30' : 'bg-red-50 border-red-200'}`}>
-                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
-                  <p className={`text-sm ${isDarkMode ? 'text-red-400' : 'text-red-700'}`}>
-                    Số tiền trả hàng tháng quá thấp so với tiền lãi phát sinh. Hãy tăng số tiền thanh toán lên trên mức <b>{formatCurrency(calculateMonthlyInterest(activeCard.balance, activeCard.interestRate))}</b>.
-                  </p>
-                </div>
-              )}
+                <!-- Nút Toggle Dark Mode -->
+                <button id="themeToggle" class="p-3 rounded-full shadow-sm transition-all bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-700 dark:text-yellow-400 dark:hover:bg-slate-600">
+                    <i data-lucide="moon" class="w-6 h-6 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-6 h-6 hidden dark:block"></i>
+                </button>
             </div>
 
-            {/* Bảng Lịch Trình Chi Tiết */}
-            <div className="lg:col-span-2">
-              <div className={`rounded-xl shadow-sm border h-full flex flex-col overflow-hidden transition-colors ${theme.cardBg} ${theme.cardBorder}`}>
-                <div className={`px-6 py-4 border-b flex justify-between items-center ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-                  <h3 className={`font-semibold flex items-center ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                    <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                    Lịch Trình Chi Tiết
-                  </h3>
-                  {summary.isPayable && (
-                    <span className={`text-xs font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Kết thúc sau {Math.floor(summary.months / 12)} năm {summary.months % 12} tháng
+            <!-- PHẦN 1: DANH SÁCH THẺ -->
+            <div class="rounded-xl shadow-sm border overflow-hidden transition-colors bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                <div class="p-6 border-b flex justify-between items-center bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                    <h2 class="font-semibold text-lg flex items-center text-slate-800 dark:text-white">
+                        <i data-lucide="landmark" class="w-5 h-5 mr-2 text-indigo-600"></i> 
+                        Danh Sách Thẻ Cần Trả
+                    </h2>
+                    <span class="text-sm px-3 py-1 rounded border bg-white border-slate-200 text-slate-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300">
+                        Tổng nợ: <span class="font-bold text-red-500" id="totalDebtDisplay">0 ₫</span>
                     </span>
-                  )}
                 </div>
 
-                <div className="flex-1 overflow-auto max-h-[600px] p-0">
-                  {summary.isPayable && schedule.length > 0 ? (
-                    <table className="w-full text-sm text-left">
-                      <thead className={`sticky top-0 z-10 shadow-sm text-xs uppercase font-semibold ${theme.tableHeader}`}>
-                        <tr>
-                          <th className={`px-4 py-3 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Tháng</th>
-                          <th className={`px-4 py-3 text-right ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Trả Gốc</th>
-                          <th className={`px-4 py-3 text-right text-red-500 ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Trả Lãi</th>
-                          <th className={`px-4 py-3 text-right ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>Dư Nợ Còn Lại</th>
-                        </tr>
-                      </thead>
-                      <tbody className={`divide-y ${isDarkMode ? 'divide-slate-700' : 'divide-slate-50'}`}>
-                        {schedule.map((row) => (
-                          <tr key={row.month} className={`transition-colors ${isDarkMode ? 'hover:bg-indigo-900/20' : 'hover:bg-indigo-50/30'}`}>
-                            <td className={`px-4 py-3 font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Tháng {row.month}</td>
-                            <td className="px-4 py-3 text-right">{formatCurrency(row.principal)}</td>
-                            <td className="px-4 py-3 text-right text-red-500">{formatCurrency(row.interest)}</td>
-                            <td className={`px-4 py-3 text-right font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                              {row.remaining === 0 ? (
-                                <span className={`inline-flex items-center font-bold justify-end ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                                  Xong! <CheckCircle className="w-3 h-3 ml-1" />
-                                </span>
-                              ) : (
-                                formatCurrency(row.remaining)
-                              )}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="uppercase font-semibold text-xs bg-slate-50 text-slate-500 dark:bg-slate-700/50 dark:text-slate-300">
+                            <tr>
+                                <th class="px-6 py-4">Ngân hàng / Tên Thẻ</th>
+                                <th class="px-6 py-4 text-right">Số tiền nợ</th>
+                                <th class="px-6 py-4 text-right">Lãi suất năm</th>
+                                <th class="px-6 py-4 text-right text-red-500">Lãi tháng này (Est)</th>
+                                <th class="px-6 py-4 text-right">Thanh toán tối thiểu</th>
+                                <th class="px-6 py-4 text-center">Ngày thanh toán</th>
+                                <th class="px-6 py-4 text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cardListBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            <!-- JS sẽ render danh sách thẻ vào đây -->
+                        </tbody>
+                        
+                        <!-- Form Thêm Thẻ -->
+                        <tr class="border-t-2 bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
+                            <td class="px-4 py-3">
+                                <input type="text" id="newBankName" placeholder="VD: VIB Online..." class="w-full text-sm p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
                             </td>
-                          </tr>
-                        ))}
-                      </tbody>
+                            <td class="px-4 py-3">
+                                <input type="number" id="newBalance" placeholder="Số dư..." class="w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                            </td>
+                            <td class="px-4 py-3 w-24">
+                                <input type="number" id="newInterest" placeholder="%" class="w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                            </td>
+                            <td class="px-4 py-3 text-center text-xs text-slate-400">---</td>
+                            <td class="px-4 py-3">
+                                <input type="number" id="newMinPayment" placeholder="Min..." class="w-full text-sm p-2 text-right rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                            </td>
+                            <td class="px-4 py-3 w-24">
+                                <input type="number" id="newDate" placeholder="Ngày" max="31" class="w-full text-sm p-2 text-center rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white border-slate-300 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <button onclick="addCard()" class="flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded text-sm font-medium transition shadow-sm">
+                                    <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Thêm
+                                </button>
+                            </td>
+                        </tr>
                     </table>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-                       <TrendingDown className="w-12 h-12 mb-3 opacity-20" />
-                       <p>Không có dữ liệu hoặc kế hoạch trả nợ không khả thi.</p>
-                    </div>
-                  )}
                 </div>
-              </div>
             </div>
 
-          </div>
-        ) : (
-          <div className={`text-center py-12 rounded-xl border border-dashed transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'}`}>
-            <p className={theme.subText}>Vui lòng chọn một thẻ từ danh sách trên để tính toán phương án trả nợ.</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+            <!-- PHẦN 2: CÔNG CỤ TÍNH TOÁN -->
+            <div id="calculatorSection" class="hidden grid-cols-1 lg:grid-cols-3 gap-6 animate-[fadeIn_0.5s_ease-out]">
+                
+                <!-- Input Kế Hoạch -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="rounded-xl shadow-sm border p-6 relative overflow-hidden transition-colors bg-white border-indigo-100 dark:bg-slate-800 dark:border-indigo-900">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <i data-lucide="credit-card" class="w-24 h-24 text-indigo-600"></i>
+                        </div>
+                        
+                        <h2 class="text-lg font-bold mb-1 text-slate-800 dark:text-white">Kế Hoạch Trả Nợ</h2>
+                        <p class="text-sm text-indigo-500 font-medium mb-6 flex items-center">
+                            Đang tính cho: <span id="calcBankName" class="ml-1">...</span>
+                        </p>
 
-export default App;
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-lg border bg-slate-50 border-slate-200 dark:bg-slate-700/50 dark:border-slate-600">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-500 dark:text-slate-400">Dư nợ hiện tại</span>
+                                    <span class="font-semibold dark:text-white" id="calcBalance">0 ₫</span>
+                                </div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-slate-500 dark:text-slate-400">Lãi suất</span>
+                                    <span class="font-semibold dark:text-white" id="calcInterest">0% / năm</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-500 dark:text-slate-400">Thanh toán tối thiểu</span>
+                                    <span class="font-semibold text-slate-700 dark:text-slate-300" id="calcMinPayment">0 ₫</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
+                                    Bạn dự định trả bao nhiêu mỗi tháng?
+                                </label>
+                                <div class="relative">
+                                    <input type="number" id="plannedPayment" oninput="calculateSchedule()" 
+                                        class="w-full pl-4 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg font-semibold bg-indigo-50/50 border-indigo-100 text-indigo-700 dark:bg-slate-900 dark:border-indigo-900 dark:text-indigo-400">
+                                </div>
+                                <p id="minPaymentWarning" class="hidden text-xs text-red-500 mt-2 flex items-center">
+                                    <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> 
+                                    Nên trả lớn hơn mức tối thiểu (<span id="warnMinVal"></span>)
+                                </p>
+                            </div>
+                            
+                            <!-- Summary Cards Mini -->
+                            <div class="grid grid-cols-2 gap-3 mt-4">
+                                <div class="p-3 rounded-lg border bg-green-50 border-green-100 dark:bg-green-900/20 dark:border-green-900/30">
+                                    <p class="text-xs mb-1 text-green-600 dark:text-green-400">Thời gian trả</p>
+                                    <p class="font-bold text-lg text-green-800 dark:text-green-400" id="resultMonths">∞</p>
+                                </div>
+                                <div class="p-3 rounded-lg border bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900/30">
+                                    <p class="text-xs mb-1 text-red-600 dark:text-red-400">Tổng lãi phải chịu</p>
+                                    <p class="font-bold text-lg text-red-800 dark:text-red-400" id="resultInterest">---</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Box -->
+                    <div id="impossibleWarning" class="hidden border rounded-xl p-4 flex items-start space-x-3 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-900/30">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 mt-0.5"></i>
+                        <p class="text-sm text-red-700 dark:text-red-400">
+                            Số tiền trả hàng tháng quá thấp so với tiền lãi phát sinh. Hãy tăng số tiền thanh toán lên trên mức <b id="minInterestReq">0 ₫</b>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Bảng Lịch Trình Chi Tiết -->
+                <div class="lg:col-span-2">
+                    <div class="rounded-xl shadow-sm border h-full flex flex-col overflow-hidden transition-colors bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+                        <div class="px-6 py-4 border-b flex justify-between items-center bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                            <h3 class="font-semibold flex items-center text-slate-700 dark:text-slate-200">
+                                <i data-lucide="calendar" class="w-4 h-4 mr-2 text-slate-400"></i>
+                                Lịch Trình Chi Tiết
+                            </h3>
+                            <span id="resultTimeText" class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                --
+                            </span>
+                        </div>
+
+                        <div class="flex-1 overflow-auto max-h-[600px] p-0">
+                            <table class="w-full text-sm text-left" id="scheduleTable">
+                                <thead class="sticky top-0 z-10 shadow-sm text-xs uppercase font-semibold bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                                    <tr>
+                                        <th class="px-4 py-3">Tháng</th>
+                                        <th class="px-4 py-3 text-right">Trả Gốc</th>
+                                        <th class="px-4 py-3 text-right text-red-500">Trả Lãi</th>
+                                        <th class="px-4 py-3 text-right">Dư Nợ Còn Lại</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scheduleBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                    <!-- Rows rendered here -->
+                                </tbody>
+                            </table>
+                            
+                            <!-- Empty State -->
+                            <div id="emptyState" class="flex flex-col items-center justify-center h-64 text-slate-400 hidden">
+                                <i data-lucide="trending-down" class="w-12 h-12 mb-3 opacity-20"></i>
+                                <p>Không có dữ liệu hoặc kế hoạch trả nợ không khả thi.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empty Selection State -->
+            <div id="selectPrompt" class="text-center py-12 rounded-xl border border-dashed transition-colors bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-700">
+                <p class="text-slate-500 dark:text-slate-400">Vui lòng chọn một thẻ từ danh sách trên để tính toán phương án trả nợ.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- State ---
+        let cards = [
+            { id: 1, bankName: 'Techcombank Visa', balance: 20000000, interestRate: 30, minPayment: 1000000, paymentDate: 5 },
+            { id: 2, bankName: 'VPBank Mastercard', balance: 15000000, interestRate: 36, minPayment: 750000, paymentDate: 20 }
+        ];
+        
+        let selectedCardId = null;
+        let isDarkMode = false;
+
+        // --- Utils ---
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        };
+
+        const calculateMonthlyInterest = (balance, rate) => {
+            return balance * (rate / 100 / 12);
+        };
+
+        // --- Core Logic ---
+        function renderCards() {
+            const tbody = document.getElementById('cardListBody');
+            tbody.innerHTML = '';
+            let totalDebt = 0;
+
+            cards.forEach(card => {
+                totalDebt += card.balance;
+                const interestAmt = calculateMonthlyInterest(card.balance, card.interestRate);
+                const isSelected = selectedCardId === card.id;
+                
+                // Style cho row được chọn
+                const activeClass = isSelected 
+                    ? 'bg-indigo-50 dark:bg-indigo-900/30' 
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-700';
+
+                const tr = document.createElement('tr');
+                tr.className = `cursor-pointer transition-colors border-b last:border-0 border-slate-100 dark:border-slate-700 ${activeClass}`;
+                tr.onclick = () => selectCard(card.id);
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-medium flex items-center text-slate-700 dark:text-slate-200">
+                        ${isSelected ? '<i data-lucide="check-circle" class="w-4 h-4 text-indigo-500 mr-2"></i>' : ''}
+                        ${card.bankName}
+                    </td>
+                    <td class="px-6 py-4 text-right font-semibold text-slate-800 dark:text-white">${formatCurrency(card.balance)}</td>
+                    <td class="px-6 py-4 text-right text-slate-600 dark:text-slate-400">${card.interestRate}%</td>
+                    <td class="px-6 py-4 text-right text-red-500 font-medium">${formatCurrency(interestAmt)}</td>
+                    <td class="px-6 py-4 text-right text-slate-500 dark:text-slate-400">${formatCurrency(card.minPayment)}</td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2 py-1 rounded text-xs bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                            Ngày ${card.paymentDate}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="event.stopPropagation(); deleteCard(${card.id})" class="p-1 rounded transition hover:bg-red-100 text-slate-400 hover:text-red-500 dark:hover:bg-red-900/50">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('totalDebtDisplay').innerText = formatCurrency(totalDebt);
+            lucide.createIcons();
+        }
+
+        function addCard() {
+            const name = document.getElementById('newBankName').value;
+            const balance = parseFloat(document.getElementById('newBalance').value);
+            const rate = parseFloat(document.getElementById('newInterest').value);
+            const minPay = parseFloat(document.getElementById('newMinPayment').value);
+            const date = parseInt(document.getElementById('newDate').value);
+
+            if (!name || !balance) {
+                alert("Vui lòng nhập tên ngân hàng và số dư nợ!");
+                return;
+            }
+
+            const newCard = {
+                id: Date.now(),
+                bankName: name,
+                balance: balance,
+                interestRate: rate || 0,
+                minPayment: minPay || 0,
+                paymentDate: date || 1
+            };
+
+            cards.push(newCard);
+            
+            // Clear inputs
+            document.getElementById('newBankName').value = '';
+            document.getElementById('newBalance').value = '';
+            document.getElementById('newInterest').value = '';
+            document.getElementById('newMinPayment').value = '';
+            document.getElementById('newDate').value = '';
+
+            selectCard(newCard.id); // Tự động chọn thẻ mới
+        }
+
+        function deleteCard(id) {
+            cards = cards.filter(c => c.id !== id);
+            if (selectedCardId === id) {
+                selectedCardId = null;
+                document.getElementById('calculatorSection').classList.remove('grid');
+                document.getElementById('calculatorSection').classList.add('hidden');
+                document.getElementById('selectPrompt').classList.remove('hidden');
+            }
+            renderCards();
+        }
+
+        function selectCard(id) {
+            selectedCardId = id;
+            renderCards(); // Re-render to update selection styling
+            
+            const card = cards.find(c => c.id === id);
+            if (!card) return;
+
+            // Show calculator section
+            document.getElementById('calculatorSection').classList.remove('hidden');
+            document.getElementById('calculatorSection').classList.add('grid');
+            document.getElementById('selectPrompt').classList.add('hidden');
+
+            // Fill card details
+            document.getElementById('calcBankName').innerText = card.bankName;
+            document.getElementById('calcBalance').innerText = formatCurrency(card.balance);
+            document.getElementById('calcInterest').innerText = card.interestRate + '% / năm';
+            document.getElementById('calcMinPayment').innerText = formatCurrency(card.minPayment);
+
+            // Default planned payment = slightly more than min payment or 2M
+            const defaultPlan = Math.max(card.minPayment, 2000000);
+            document.getElementById('plannedPayment').value = defaultPlan;
+
+            calculateSchedule();
+        }
+
+        function calculateSchedule() {
+            const card = cards.find(c => c.id === selectedCardId);
+            if (!card) return;
+
+            const plannedPayment = parseFloat(document.getElementById('plannedPayment').value) || 0;
+            const monthlyRate = card.interestRate / 100 / 12;
+            let tempBalance = card.balance;
+            let totalInterest = 0;
+            let months = 0;
+            let scheduleHTML = '';
+            let isPayable = true;
+
+            // Check warning conditions
+            const minInterest = tempBalance * monthlyRate;
+            
+            // Min Payment Warning
+            if (plannedPayment < card.minPayment) {
+                document.getElementById('minPaymentWarning').classList.remove('hidden');
+                document.getElementById('warnMinVal').innerText = formatCurrency(card.minPayment);
+            } else {
+                document.getElementById('minPaymentWarning').classList.add('hidden');
+            }
+
+            // Impossible to Pay Warning
+            if (minInterest >= plannedPayment) {
+                isPayable = false;
+            }
+
+            const tbody = document.getElementById('scheduleBody');
+            tbody.innerHTML = '';
+
+            if (!isPayable) {
+                document.getElementById('impossibleWarning').classList.remove('hidden');
+                document.getElementById('minInterestReq').innerText = formatCurrency(minInterest);
+                
+                document.getElementById('resultMonths').innerText = "∞";
+                document.getElementById('resultInterest').innerText = "---";
+                document.getElementById('resultTimeText').innerText = "";
+                document.getElementById('scheduleTable').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            // Reset UI for valid case
+            document.getElementById('impossibleWarning').classList.add('hidden');
+            document.getElementById('scheduleTable').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            // Calculation Loop (Max 360 months)
+            while (tempBalance > 0 && months < 360) {
+                months++;
+                const interestPayment = tempBalance * monthlyRate;
+                let principalPayment = plannedPayment - interestPayment;
+                
+                if (tempBalance < principalPayment) {
+                    principalPayment = tempBalance;
+                }
+
+                totalInterest += interestPayment;
+                tempBalance -= principalPayment;
+                if (tempBalance < 0) tempBalance = 0;
+
+                // Render row
+                scheduleHTML += `
+                    <tr class="transition-colors hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20">
+                        <td class="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">Tháng ${months}</td>
+                        <td class="px-4 py-3 text-right text-slate-600 dark:text-slate-400">${formatCurrency(principalPayment)}</td>
+                        <td class="px-4 py-3 text-right text-red-500">${formatCurrency(interestPayment)}</td>
+                        <td class="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-300">
+                            ${tempBalance === 0 
+                                ? `<span class="inline-flex items-center font-bold justify-end text-green-600 dark:text-green-400">Xong! <i data-lucide="check-circle" class="w-3 h-3 ml-1"></i></span>` 
+                                : formatCurrency(tempBalance)}
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = scheduleHTML;
+            document.getElementById('resultMonths').innerText = `${months} tháng`;
+            document.getElementById('resultInterest').innerText = formatCurrency(totalInterest);
+            document.getElementById('resultTimeText').innerText = `Kết thúc sau ${Math.floor(months/12)} năm ${months%12} tháng`;
+            
+            lucide.createIcons();
+        }
+
+        // --- Theme Logic ---
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            // Re-render to update dynamic classes if any
+            renderCards();
+            if (selectedCardId) calculateSchedule();
+        });
+
+        // --- Init ---
+        // Tự động chọn thẻ đầu tiên
+        renderCards();
+        selectCard(1); 
+        
+        // Check system preference for dark mode
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            isDarkMode = true;
+            document.documentElement.classList.add('dark');
+        }
+
+    </script>
+</body>
+</html>
